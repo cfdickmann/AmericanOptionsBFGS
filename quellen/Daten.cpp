@@ -3,7 +3,7 @@
 using namespace std;
 
 void AmericanOption::Daten(){
-	int Example=103;
+	int Example=3;
 
 	X0=(double*)malloc(sizeof(double)*100);
 	sigma=(double*)malloc(sizeof(double)*100);
@@ -104,10 +104,10 @@ void AmericanOption::Daten(){
 		PfadModell=ITO;
 		option=MAX_CALL;
 		delta=0.1;
-		D=10;
+		D=2;
 		for(int j=0;j<D;++j)
 		{
-			X0[j]=110.;
+			X0[j]=90.;
 			sigma[j]=0.2;
 		}
 		Strike = 100.;

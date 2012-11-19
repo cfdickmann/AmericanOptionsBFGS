@@ -705,7 +705,8 @@ void AmericanOption::stuetzpunkte_ausgeben()
 }
 
 double* AmericanOption::LP_mitGLPK_Loesen() {
-	time_t time1 = time(NULL);
+	return NULL;
+	/*time_t time1 = time(NULL);
 	for (int m = 0; m < Mphi; ++m)
 		for (int j = 0; j < J; ++j)
 			if(stuetzstelle_active[j])
@@ -767,7 +768,7 @@ double* AmericanOption::LP_mitGLPK_Loesen() {
 	delete[] ja;
 	delete[] ia;
 	delete[] ar;
-	return x;
+	return x;*/
 }
 
 void AmericanOption::semi_ergebnisse_ausgeben(){

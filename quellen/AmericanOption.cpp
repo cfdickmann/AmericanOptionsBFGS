@@ -10,6 +10,7 @@
 #include "RNG.h"
 
 using namespace std;
+//using namespace alglib;
 
 AmericanOption::AmericanOption() {
 	BFGS_Nesterov_Intervals = 5;

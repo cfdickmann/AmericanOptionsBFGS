@@ -1,4 +1,3 @@
-#include "AmericanOption.h"
 #include <ctype.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -8,7 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../alglib/optimization.h"
+#include "../alglib/linalg.h"
+#include "../alglib/ap.h"
+
+#include "AmericanOption.h"
+
 using namespace std;
+using namespace alglib;
 
 static AmericanOption* zeiger;
 
@@ -165,7 +171,7 @@ void AmericanOption::objfs_aufrufen(double* x, double &func, double* grad) {
     }
 }
 
-/*static void Delegate_static_objfs(const real_1d_array &x, double &func, real_1d_array &grad, void *ptr)
+static void Delegate_static_objfs(const real_1d_array &x, double &func, real_1d_array &grad, void *ptr)
 {
 	int K=zeiger->K;
 	double* xx=(double*)malloc(sizeof(double)*K);
@@ -210,7 +216,7 @@ void AmericanOption::objfs_aufrufen(double* x, double &func, double* grad) {
 			grad[k]=gr[k];
 		}
 	}
-}*/
+}
 
 double AmericanOption::F(double x, int k, double border, bool hauf){
 	if(k==0) return 1;
@@ -533,79 +539,81 @@ void AmericanOption::StochInt(double** STi, double** X, double** WDiff, double**
 
 void AmericanOption::BFGS()
 {
-     printf("BFGS ausgeschaltet\n");
-  //    BFGS_Iterations=200;
-//	zeiger=this;
-//	BFGS_setting();
-//
-//	real_1d_array x;
-//	x.setlength(K);
-//	for(int k=0;k<K;++k)
-//		x[k]=0;
-//	if(loadAlphas){
-//		if(verbose)printf("alphas laden");
-//		DateiLeser DL;
-//		double* alpha=DL.alphasLaden(K);
-//		for (int k = 0; k < K; ++k) x[k]=alpha[k];
-//	}
-//
-//	if(speedup)
-//	{
-//		int M_store=M;
-//
-//		//if(Training_Dates>20)neueExerciseDates(Training_Dates/5);
-//		M=M_store/300;
-//		{if(verbose)printf("L-BFGS probelauf\n");
-//		double epsg = 0;double epsf = 0;double epsx = 0;
-//		ae_int_t maxits = 50;mincgstate state;mincgreport rep;mincgcreate(x, state);
-//		mincgsetcond(state, epsg, epsf, epsx, maxits);
-//		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
-//		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
-//
-//
-//		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
-//		M=M_store/30;
-//		{if(verbose)printf("L-BFGS probelauf\n");
-//		double epsg = 0;double epsf = 0;double epsx = 0;
-//		ae_int_t maxits = 15;mincgstate state;mincgreport rep;mincgcreate(x, state);
-//		mincgsetcond(state, epsg, epsf, epsx, maxits);
-//		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
-//		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
-//
-//
-//		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
-//		M=M_store/10;
-//		{if(verbose)printf("L-BFGS probelauf\n");
-//		double epsg = 0;double epsf = 0;double epsx = 0;
-//		ae_int_t maxits = 15;mincgstate state;mincgreport rep;mincgcreate(x, state);
-//		mincgsetcond(state, epsg, epsf, epsx, maxits);
-//		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
-//		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
-//
-//
-//		//if(Training_Dates>20)neueExerciseDates(Training_Dates/2);
-//		M=M_store/2;
-//		{if(verbose)printf("L-BFGS probelauf\n");
-//		double epsg = 0;double epsf = 0;double epsx = 0;
-//		ae_int_t maxits = 5;mincgstate state;mincgreport rep;mincgcreate(x, state);
-//		mincgsetcond(state, epsg, epsf, epsx, maxits);
-//		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
-//		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
-//		speedup=false;
-//		M=M_store;
-//		neueExerciseDates(Training_Dates);
-//	}
-//
-//	min=1000000;
-//	if(verbose)printf("L-BFGS starten\n");
-//	double epsg = 0.000001;double epsf = 0;double epsx = 0;
-//	ae_int_t maxits = 0;mincgstate state;mincgreport rep;mincgcreate(x, state);
-//	mincgsetcond(state, epsg, epsf, epsx, maxits);
-//	alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
-//	printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));
-//
-//	for(int k=0;k<K;++k)
-//		alpha[k]=x[k];
+
+printf("BFGS ausgeschaltet\n");
+
+      BFGS_Iterations=200;
+	zeiger=this;
+	BFGS_setting();
+
+
+	real_1d_array x;
+	x.setlength(K);
+	for(int k=0;k<K;++k)
+		x[k]=0;
+	if(loadAlphas){
+		if(verbose)printf("alphas laden");
+		double* alpha=alphasLaden(K);
+		for (int k = 0; k < K; ++k) x[k]=alpha[k];
+	}
+
+	if(speedup)
+	{
+		int M_store=M;
+
+		//if(Training_Dates>20)neueExerciseDates(Training_Dates/5);
+		M=M_store/300;
+		{if(verbose)printf("L-BFGS probelauf\n");
+		double epsg = 0;double epsf = 0;double epsx = 0;
+		ae_int_t maxits = 50;mincgstate state;mincgreport rep;mincgcreate(x, state);
+		mincgsetcond(state, epsg, epsf, epsx, maxits);
+		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
+		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
+
+
+		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
+		M=M_store/30;
+		{if(verbose)printf("L-BFGS probelauf\n");
+		double epsg = 0;double epsf = 0;double epsx = 0;
+		ae_int_t maxits = 15;mincgstate state;mincgreport rep;mincgcreate(x, state);
+		mincgsetcond(state, epsg, epsf, epsx, maxits);
+		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
+		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
+
+
+		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
+		M=M_store/10;
+		{if(verbose)printf("L-BFGS probelauf\n");
+		double epsg = 0;double epsf = 0;double epsx = 0;
+		ae_int_t maxits = 15;mincgstate state;mincgreport rep;mincgcreate(x, state);
+		mincgsetcond(state, epsg, epsf, epsx, maxits);
+		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
+		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
+
+
+		//if(Training_Dates>20)neueExerciseDates(Training_Dates/2);
+		M=M_store/2;
+		{if(verbose)printf("L-BFGS probelauf\n");
+		double epsg = 0;double epsf = 0;double epsx = 0;
+		ae_int_t maxits = 5;mincgstate state;mincgreport rep;mincgcreate(x, state);
+		mincgsetcond(state, epsg, epsf, epsx, maxits);
+		alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
+		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));}
+		speedup=false;
+		M=M_store;
+		neueExerciseDates(Training_Dates);
+	}
+
+	min=1000000;
+	if(verbose)printf("L-BFGS starten\n");
+	double epsg = 0.000001;double epsf = 0;double epsx = 0;
+	ae_int_t maxits = 0;mincgstate state;mincgreport rep;mincgcreate(x, state);
+	mincgsetcond(state, epsg, epsf, epsx, maxits);
+	alglib::mincgoptimize(state, Delegate_static_objfs);mincgresults(state, x, rep);
+	printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));
+
+	for(int k=0;k<K;++k)
+		alpha[k]=x[k];
 }
 
 void AmericanOption::BFGS_extremeTesting(int l, double number_of_replications){

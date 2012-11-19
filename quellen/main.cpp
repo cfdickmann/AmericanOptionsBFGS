@@ -24,7 +24,6 @@ void Test(){
 }
 
 int main( int argc, char* args[]) {
-	printf("BFGS\n");
 	int runden=1;
 	AmericanOption AMO;
 
@@ -71,6 +70,7 @@ int main( int argc, char* args[]) {
 		printf("Anzahl der Wiederholungen\n");
 		cin >> runden;
 	}
+
 	for(int i=0;i<runden;++i){
 		if (AMO.longstaffschwarz)AMO.LongstaffSchwartz();
 		if (AMO.andersenbroadie)AMO.AndersenBroadie();

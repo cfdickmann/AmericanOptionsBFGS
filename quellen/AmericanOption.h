@@ -9,24 +9,25 @@
 #include <math.h>
 #include <iostream>
 #include <stdlib.h>
-//#include "../src/optimization.h"
-
 #include <time.h>
-#include "RNG.h"
-#include "MTRand.h"
-//#include "../src/ap.h"
-#include "math.h"
-#include "Hilfsmittel.h"
-//#include "../src/stdafx.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-//#include "../src/optimization.h"
 #include <math.h>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <cstring>
+
+#include "../alglib/optimization.h"
+#include "../alglib/stdafx.h"
+#include "../alglib/ap.h"
+#include "../alglib/optimization.h"
+
+#include "RNG.h"
+#include "MTRand.h"
+#include "math.h"
+#include "Hilfsmittel.h"
 
 #define MAX_CALL 1  //bedeutet Put im Fall D=1
 #define MIN_PUT 0   //bedeutet Put im Fall D=1
@@ -75,6 +76,8 @@ public:
 	int K5;
 	int M; // numer of training paths for BFGS
 	int BFGS_Nesterov_Intervals;
+
+	double min;
 
 	int K; //K=NN*5+1; //Anzahl der Basisfunktionen
 	double dt;
