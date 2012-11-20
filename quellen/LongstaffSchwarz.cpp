@@ -16,8 +16,8 @@ void* DELEGATE_LSM_mittelwert(void* data) {
 }
 
 void AmericanOption::LongstaffSchwartz() { //TODO
-	LSM_Mtraining=1000000;
-	LSM_Mtesting =10000000;
+	LSM_Mtraining=100000;
+	LSM_Mtesting =100000;
 
 	LSM_setting();
 
@@ -43,7 +43,7 @@ void AmericanOption::LongstaffSchwartz() { //TODO
 	for (int lauf = N - 2; lauf >= 1; --lauf) {
 		LSlauf=lauf;
 		printf("Schritt %d - ",lauf);
-
+cout.flush();
 
 		double** P=DoubleFeld(Mphi,Mphi);
 		double PV[Mphi];

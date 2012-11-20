@@ -386,7 +386,6 @@ double AmericanOption::BFGS_testing(double number_of_replications){
 			for(int j=0;j<D;++j)
 				wdiff[n][j] = sqrt(dt) * nextGaussian();
 
-
 		Pfadgenerieren(x,wdiff);
 
 		if(lauf<Npfade+1){
@@ -451,7 +450,7 @@ void AmericanOption::StochInt(double** STi, double** X, double** WDiff, double**
             int k = kk % (K1 + K2 + K3 + K4 + K5);
             int AbschnittK = (kk - k) / (K1 + K2 + K3 + K4 + K5);
             int AbschnittN = (int) (floor((double) (n) / (double) (N)*(double) BFGS_Nesterov_Intervals));
-            //printf("%d, %d\n",AbschnittK,AbschnittN);
+            if (AbschnittK != AbschnittN)printf("Error 344\n");
             if (AbschnittK == AbschnittN)
                 for (int j = 0; j < D; ++j) {
                     double W = 0;
@@ -539,8 +538,8 @@ void AmericanOption::StochInt(double** STi, double** X, double** WDiff, double**
 
 void AmericanOption::BFGS()
 {
-
-printf("BFGS ausgeschaltet\n");
+//
+//printf("BFGS ausgeschaltet\n");
 
       BFGS_Iterations=200;
 	zeiger=this;

@@ -1,1 +1,1 @@
-g++ ../quellen/* ../alglib/* -lpthread -o AmericanOptionsML
+g++ ../quellen/* ../alglib/* -lpthread -o AmericanOptionsBFGS

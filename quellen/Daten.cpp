@@ -107,7 +107,7 @@ void AmericanOption::Daten(){
 		D=2;
 		for(int j=0;j<D;++j)
 		{
-			X0[j]=90.;
+			X0[j]=100.;
 			sigma[j]=0.2;
 		}
 		Strike = 100.;
@@ -116,14 +116,14 @@ void AmericanOption::Daten(){
 		Testing_Dates=10;
 		Training_Dates=10;
 		N = 10;
-		K1=15;
-		K2=15;
-		K3=15;
-		K4=15;
+		K1=25;
+		K2=25;
+		K3=25;
+		K4=25;
 		K5=0;
 		M=5000;
 	}
-//
+
 //	if(Example==4){					//Cuffignals Example
 //		PfadModell=ITO;
 //		option=MIN_PUT;
@@ -228,5 +228,5 @@ void AmericanOption::Daten(){
 //	}
 
         BFGS_Nesterov_Intervals=1;
-	Threadanzahl=8;
+	Threadanzahl=10;
 }
