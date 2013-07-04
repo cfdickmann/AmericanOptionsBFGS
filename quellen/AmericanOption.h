@@ -109,6 +109,14 @@ public:
 	double** gradient;
 	double* sup_glatt;
 
+int KpI;
+int NpI;
+
+	double f1D(double x, int k, int d);
+	double f2D(double* x, int k, int d);
+
+	double f(int k, double **x, int n, int d);
+
 	MTRand MT; //MersenneTwister
 	void Pfadgenerieren(double** X, int start, double * S);
 	void Pfadgenerieren(double** X, double** wdiff, int start, double* S);

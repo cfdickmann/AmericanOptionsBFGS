@@ -74,6 +74,7 @@ double AmericanOption::max(double d1, double d2) {
 
 double AmericanOption::payoff(double* x, int time) {
 	//	return payoff(x,time,D);
+	return x[0]-Strike;
 	if (option == MIN_PUT)
 		return max(Strike - Min(x, D), 0) * exp(-r * dt * (double) (time)); //Min Put
 	if (option == MAX_CALL)
@@ -161,7 +162,9 @@ void AmericanOption::Pfadgenerieren(double** X, double** wdiff, int start, doubl
 	for (int d = 0; d < D; ++d) {
 		for (int n = start + 1; n < N; ++n) {
 			if (PfadModell == ITO)
-				X[n][d] = X[n - 1][d] * exp((((r - delta) - 0.5 * sigma[d] * sigma[d]) * dt + sigma[d] * wdiff[n][d]));
+			//	X[n][d] = X[n - 1][d] * exp((((r - delta) - 0.5 * sigma[d] * sigma[d]) * dt + sigma[d] * wdiff[n][d]));
+		X[n][d]=X[n-1][d]+wdiff[n][d];
+
 			if (PfadModell == EULER)
 				X[n][d] = X[n - 1][d] + (r - delta) * X[n - 1][d] * dt + sigma[d] * X[n - 1][d] * wdiff[n][d];
 			if (PfadModell == CIR)
