@@ -26,19 +26,99 @@ void* DELEGATE_BFGS_mittelwert(void* data) {
 	return NULL;
 }
 
+double AmericanOption::obj(double * alpha) {
+	double ergE = 0;
+	double erg1 = 0;
+	double ergQ1 = 0;
+
+	double p = 2.; //Glättungsparameter
+	for (int m = 0; m < M / 2; ++m) { //Summieren  ueber alle replications
+		double d[number_of_Exercise_Dates];
+		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
+			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
+			for (int k = 0; k < K; ++k)
+				d[ex] -= alpha[k] * StochIntegrals[k][m][Exercise_Dates[ex]];
+		}
+
+		double s = 0;
+		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex)
+			s += exp((p * d[ex]));
+
+		double u = log(s) / p;
+		erg1 += u / (double) (M / 2);
+		ergQ1 += u * u / (double) (M / 2);
+
+		ergE += Max(d, number_of_Exercise_Dates) / (double) M;
+	}
+
+	double erg2 = 0;
+	double ergQ2 = 0;
+//	for (int m = 0; m < M/2; ++m) {
+//		double lincomb = 0;
+////		printf("stopp %d\n",stoppzeiten[m]);
+//		for (int k = 0; k < K; ++k)
+//			lincomb += alpha[k] * StochIntegrals[k][m][stoppzeiten[m]];
+//		double u = payoff(X[m], N - 1) - lincomb;
+//		erg2 += u / (double) (M/2);
+//		ergQ2 += u * u / (double) (M/2);
+//	}
+	double var2 = (ergQ2 - erg2 * erg2);
+
+	for (int m = M / 2; m < M; ++m) { //Summieren  ueber alle replications
+		double d[number_of_Exercise_Dates];
+		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
+			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
+			for (int k = 0; k < K; ++k)
+				d[ex] -= alpha[k] * StochIntegrals[k][m][Exercise_Dates[ex]];
+		}
+		ergE += Max(d, number_of_Exercise_Dates) / (double) M;
+	}
+
+	double V = 1. * erg1 + 0. * var2;
+
+	static int zaehler = 0;
+	zaehler++;
+	if (zaehler % zeiger->K == 0) {
+		for (int k = 0; k < K; ++k)
+			printf("%.2lf,", alpha[k]);
+		printf("\nV=%f\n", V);
+		printf("dual(testing): %f\n", ergE);
+	}
+
+	if (zaehler % zeiger->K == 0) {
+		printf("schreiben\n");
+		fstream f;
+		f.open("mart.txt", ios::out);
+		for (int n = 0; n < N; ++n) {
+			for (double x = 10; x < 300; ++x) {
+				double** xx = DoubleFeld(N, D);
+				xx[n][0] = x;
+				double func = 0;
+				for (int k = 0; k < K; ++k)
+					func += alpha[k] * this->f(k, xx, n, 0) / x;
+				f << func << endl;
+			}
+			f << endl;
+		}
+		f.close();
+		system("gnuplot plot.gnuplot");
+	}
+	return V;
+}
+
 void AmericanOption::objfs(double* x, double &func, double* grad) {
 	double mean_glatt = 0;
-	//	double mean_unglatt=0;
+//	double mean_unglatt=0;
 	zwischenwert_pene = 0;
 	double GRAD[K];
 	for (int k = 0; k < K; ++k)
 		GRAD[k] = 0;
 
-	//neu
+//neu
 	zx = x;
 	zeiger = this;
 	pthread_t threads[Threadanzahl];
-	// Alle Threads starten
+// Alle Threads starten
 	for (int i = 0; i < Threadanzahl; i++) {
 		int* z = (int*) malloc(sizeof(int));
 		z[0] = i;
@@ -46,7 +126,7 @@ void AmericanOption::objfs(double* x, double &func, double* grad) {
 		//                       Argument für thread_function ---^
 	}
 
-	// Hier wird gewartet bis alle Threads beendet sind.
+// Hier wird gewartet bis alle Threads beendet sind.
 	for (int i = 0; i < Threadanzahl; i++) {
 		pthread_join(threads[i], NULL);
 	}
@@ -55,49 +135,45 @@ void AmericanOption::objfs(double* x, double &func, double* grad) {
 	for (int m = 0; m < M; ++m)
 		mean_glatt += sup_glatt[m] / (double) (M);
 
-	//geglaettetes Ergebnis
+//geglaettetes Ergebnis
 	for (int k = 0; k < K; ++k) {
 		GRAD[k] = 0;
 		for (int m = 0; m < M; ++m)
 			GRAD[k] += gradient[k][m] / (double) (M);
 	}
 
-
-	if(true){
-			double
-			h=0.01;
-			zx[4]+=h;
-			pthread_t threads[Threadanzahl];
-				// Alle Threads starten
-				for (int i = 0; i < Threadanzahl; i++) {
-					int* z = (int*) malloc(sizeof(int));
-					z[0] = i;
-					pthread_create(&threads[i], NULL, DELEGATE_BFGS_mittelwert, (void*) z);
-					//                       Argument für thread_function ---^
-				}
-
-				// Hier wird gewartet bis alle Threads beendet sind.
-				for (int i = 0; i < Threadanzahl; i++) {
-					pthread_join(threads[i], NULL);
-				}
-
-				double fh = 0;
-				for (int m = 0; m < M; ++m)
-					fh += sup_glatt[m] / (double) (M);
-				zx[4]-=h;
-
-			double gr=(fh-mean_glatt)/h;
-
-		printf("\nunterschied:%f\n",GRAD[4]-gr);
+	if (true) {
+		double h = 0.00001;
+		zx[4] += h;
+		pthread_t threads[Threadanzahl];
+		// Alle Threads starten
+		for (int i = 0; i < Threadanzahl; i++) {
+			int* z = (int*) malloc(sizeof(int));
+			z[0] = i;
+			pthread_create(&threads[i], NULL, DELEGATE_BFGS_mittelwert,
+					(void*) z);
+			//                       Argument für thread_function ---^
 		}
 
+		// Hier wird gewartet bis alle Threads beendet sind.
+		for (int i = 0; i < Threadanzahl; i++) {
+			pthread_join(threads[i], NULL);
+		}
 
+		double fh = 0;
+		for (int m = 0; m < M; ++m)
+			fh += sup_glatt[m] / (double) (M);
+		zx[4] -= h;
 
+		double gr = (fh - mean_glatt) / h;
+
+		printf("\nunterschied:%f\n", GRAD[4] - gr);
+	}
 
 	double erg = mean_glatt;
 
-	//penelization...
-	//...fuer f
+//penelization...
+//...fuer f
 	double lambda = 0.;
 	if (lambda > 0) {
 		double W = 0;
@@ -119,7 +195,7 @@ void AmericanOption::objfs(double* x, double &func, double* grad) {
 				GRAD[k] += lambda / sqrt(M) * (sup_glatt[m] - mean_glatt)
 						* (gradient[k][m] - mean_gradient[k]) / sqrt(W);
 	}
-	//arcus tangens
+//arcus tangens
 	bool atanAnwenden = false;
 	if (atanAnwenden) {
 		double q = 10.;
@@ -128,7 +204,7 @@ void AmericanOption::objfs(double* x, double &func, double* grad) {
 		erg = atan(erg / q);
 	}
 
-	//Werte zurueckgeben
+//Werte zurueckgeben
 	func = erg;
 	for (int k = 0; k < K; k++)
 		grad[k] = GRAD[k]; // GRAD[i] wurden durch objfs gesetzt
@@ -166,8 +242,6 @@ void AmericanOption::objfs(double* x, double &func, double* grad) {
 //	}
 //}
 
-
-
 void AmericanOption::BFGS_mittelwert(int threadNummer) {
 	int mAnfang = M * threadNummer / Threadanzahl;
 	int mEnde = M * (threadNummer + 1) / Threadanzahl;
@@ -200,87 +274,131 @@ void AmericanOption::BFGS_mittelwert(int threadNummer) {
 	}
 }
 
+//void AmericanOption::objfs_aufrufen(double* x, double &func, double* grad) {
+//	if (!speedup)
+//		Iterations_Nummer++;
+//	zeiger = this;
+//	objfs(x, func, grad);
+//
+//	printf("\n\n");
+//	if (nesterov)
+//		printf("Nesterov ");
+//	else
+//		printf("BFGS ");
+//	printf("Iteration: %d:", Iterations_Nummer);
+//	if (speedup)
+//		printf("(speedup) ");
+//	time_t t = time(NULL);
+//	printf("             Bisherige Rechenzeit: %ld Sekunden", t - Anfangszeit);
+//	printf("\n");
+//	printf("f(alpha) =  %.10lf\n", func);
+//	printf("alpha = ");
+//	ausgeben(x, K);
+//	double Zw = 0;
+//	for (int z = 0; z < Threadanzahl; ++z)
+//		Zw += zwischenwert_ohne_glaettung[z] / (double) Threadanzahl;
+//	printf("Zwischenwert Ohne glaettung: %.4lf\n", Zw);
+//	printf("penelization term: %f\n", zeiger->zwischenwert_pene);
+//
+//	if (!speedup && Iterations_Nummer % 50 == 48) {
+//		alphasSchreiben(x, K);
+//		printf("------gespeichert------\n");
+//	}
+//
+//	if (BFGS_Iterations <= Iterations_Nummer && ((testing) || parallelTest)
+//			&& bfgs) //Abbrechen
+//			{
+//		for (int k = 0; k < K; ++k)
+//			grad[k] = 0;
+//	}
+//}
 
-void AmericanOption::objfs_aufrufen(double* x, double &func, double* grad) {
-	if (!speedup)
-		Iterations_Nummer++;
-	zeiger = this;
-	objfs(x, func, grad);
+void AmericanOption::stoppzeiten_erstellen() {
+	stoppzeiten = IntFeld(M);
+	double erg = 0;
+	for (int m = 0; m < M; ++m) {
+		if (m % 10 == 0) {
+			printf("Stoppzeiten erstellen ... %d %% \r", m * 100 / M);
+			cout.flush();
+		}
 
-	printf("\n\n");
-	if (nesterov)
-		printf("Nesterov ");
-	else
-		printf("BFGS ");
-	printf("Iteration: %d:", Iterations_Nummer);
-	if (speedup)
-		printf("(speedup) ");
-	time_t t = time(NULL);
-	printf("             Bisherige Rechenzeit: %ld Sekunden", t - Anfangszeit);
-	printf("\n");
-	printf("f(alpha) =  %.10lf\n", func);
-	printf("alpha = ");
-	ausgeben(x, K);
-	double Zw = 0;
-	for (int z = 0; z < Threadanzahl; ++z)
-		Zw += zwischenwert_ohne_glaettung[z] / (double) Threadanzahl;
-	printf("Zwischenwert Ohne glaettung: %.4lf\n", Zw);
-	printf("penelization term: %f\n", zeiger->zwischenwert_pene);
-
-	if (!speedup && Iterations_Nummer % 50 == 48) {
-		alphasSchreiben(x, K);
-		printf("------gespeichert------\n");
+		int stopp = number_of_Exercise_Dates - 1;
+		for (int n = 1; n < number_of_Exercise_Dates - 1; ++n)
+			if (payoff(X[m], Exercise_Dates[n])
+					> LSM_C_estimated(X[m][Exercise_Dates[n]], n)) { //TODO Achtung
+				stopp = n;
+				break;
+			}
+		erg += payoff(X[m], Exercise_Dates[stopp]);
+		stoppzeiten[m] = Exercise_Dates[stopp];
 	}
+	printf("Stoppzeiten erstellen ... fertig\n");
+	printf("stoppzeiten durchschnitt %f \n", erg / (double) M);
 
-	if (BFGS_Iterations <= Iterations_Nummer && ((testing) || parallelTest)
-			&& bfgs) //Abbrechen
-			{
-		for (int k = 0; k < K; ++k)
-			grad[k] = 0;
-	}
 }
 
+//ALT
+//static void Delegate_static_objfs(const real_1d_array &x, double &func,
+//		real_1d_array &grad, void *ptr) {
+//	int K = zeiger->K;
+//	double* xx = (double*) malloc(sizeof(double) * K);
+//	double* gradient = (double*) malloc(sizeof(double) * K);
+//	for (int k = 0; k < K; ++k) {
+//		gradient[k] = grad[k];
+//		xx[k] = x[k];
+//	}
+//	zeiger->objfs_aufrufen(xx, func, gradient);
+//
+////	zeiger->BFGS_lauf++;
+////	if(zeiger->BFGS_lauf<zeiger->BFGS_MAX_lauf)
+//	for (int k = 0; k < K; ++k)
+//		grad[k] = gradient[k];
+////		elsefor(int k=0;k<K;++k)grad[k]=0;
+////x[k]=xx[k];
+//
+//	bool numericDifferentiation = false;
+//	if (numericDifferentiation) {
+//		double f = func;
+//		int K = zeiger->K;
+//		double gr[K];
+//		for (int k = 0; k < K; ++k) {
+//			double h = 0.00000001;
+//			//				real_1d_array b;
+//			//				b.setlength(K);
+//			double b[K];
+//			for (int kk = 0; kk < zeiger->K; ++kk)
+//				b[kk] = x[kk];
+//			b[k] += h;
+//			zeiger->objfs((double*) b, func, (double*) gradient);
+//			double a = func;
+//			gr[k] = (a - f) / h;
+//		}
+//
+//		zeiger->objfs((double*) xx, func, (double*) gradient);
+//		for (int k = 0; k < K; ++k) {
+//			printf("unterschied: % f", grad[k] - gr[k]);
+//			grad[k] = gr[k];
+//		}
+//	}
+//}
+
+//Mit numerischer Differentiation
 static void Delegate_static_objfs(const real_1d_array &x, double &func,
 		real_1d_array &grad, void *ptr) {
+
 	int K = zeiger->K;
-	double* xx = (double*) malloc(sizeof(double) * K);
-	double* gradient = (double*) malloc(sizeof(double) * K);
-	for (int k = 0; k < K; ++k) {
-		gradient[k] = grad[k];
-		xx[k] = x[k];
-	}
-	zeiger->objfs_aufrufen(xx, func, gradient);
-
-	//	zeiger->BFGS_lauf++;
-	//	if(zeiger->BFGS_lauf<zeiger->BFGS_MAX_lauf)
+	double alpha[K];
 	for (int k = 0; k < K; ++k)
-		grad[k] = gradient[k];
-	//		elsefor(int k=0;k<K;++k)grad[k]=0;
-	//x[k]=xx[k];
+		alpha[k] = x[k];
 
-	bool numericDifferentiation = false;
-	if (numericDifferentiation) {
-		double f = func;
-		int K = zeiger->K;
-		double gr[K];
-		for (int k = 0; k < K; ++k) {
-			double h = 0.00000001;
-			//				real_1d_array b;
-			//				b.setlength(K);
-			double b[K];
-			for (int kk = 0; kk < zeiger->K; ++kk)
-				b[kk] = x[kk];
-			b[k] += h;
-			zeiger->objfs((double*) b, func, (double*) gradient);
-			double a = func;
-			gr[k] = (a - f) / h;
-		}
+	func = zeiger->obj(alpha);
 
-		zeiger->objfs((double*) xx, func, (double*) gradient);
-		for (int k = 0; k < K; ++k) {
-			printf("unterschied: % f", grad[k] - gr[k]);
-			grad[k] = gr[k];
-		}
+	for (int k = 0; k < K; ++k) {
+		double h = 0.001;
+		alpha[k] += h;
+		double fh = zeiger->obj(alpha);
+		grad[k] = (fh - func) / h;
+		alpha[k] -= h;
 	}
 }
 
@@ -294,107 +412,132 @@ double AmericanOption::F(double x, int k, double border, bool hauf) {
 		return sin(((double) k + 1.) * x / 2.) * (fabs(x) < border) + extra;
 }
 
-void AmericanOption::BFGS_StochIntgenerieren(int threadNummer) {
-	int mAnfang = M * threadNummer / Threadanzahl;
-	int mEnde = M * (threadNummer + 1) / Threadanzahl;
-	if (verbose)
-		printf("%d bis %d\n", mAnfang, mEnde);
+//void AmericanOption::BFGS_StochIntgenerieren(int threadNummer) {
+//	int mAnfang = M * threadNummer / Threadanzahl;
+//	int mEnde = M * (threadNummer + 1) / Threadanzahl;
+//	if (verbose)
+//		printf("%d bis %d\n", mAnfang, mEnde);
+//
+//	if (verbose)
+//		printf("Pfade erzeugen\n");
+//	for (int m = mAnfang; m < mEnde; ++m) {
+//		Pfadgenerieren(X[m], WDiff[m]);
+//	}
+//
+//	if (verbose)
+//		printf("StochInt generieren\n");
+//	double** STi = DoubleFeld(K, N);
+//	for (int m = mAnfang; m < mEnde; ++m) {
+//		for (int k = 0; k < K; ++k)
+//			STi[k][0] = 0;
+//		StochInt(STi, X[m], WDiff[m], Sprue[m]);
+//		if (m % 30 == 0)
+//			printf("StochInt generieren: %d Prozent fertig\r",
+//					(m - mAnfang) * 100 / (mEnde - mAnfang));
+//		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex)
+//			for (int k = 0; k < K; ++k)
+//				StochIntegrals[k][m][ex] = STi[k][Exercise_Dates[ex]]; // Achtung
+//			//		if(m%100==0)printf("%.0lf\%",m/(double)(mEnde-mAnfang));
+//	}
+//}
+//
+//void* DLEGATE_BFGS_StochIntegrieren(void* data) {
+//	zeiger->BFGS_StochIntgenerieren(((int*) data)[0]);
+//	pthread_exit(NULL);
+//	return NULL;
+//}
 
-	if (verbose)
-		printf("Pfade erzeugen\n");
-	for (int m = mAnfang; m < mEnde; ++m) {
-		Pfadgenerieren(X[m], WDiff[m]);
-	}
-
-	if (verbose)
-		printf("StochInt generieren\n");
-	double** STi = DoubleFeld(K, N);
-	for (int m = mAnfang; m < mEnde; ++m) {
-		for (int k = 0; k < K; ++k)
-			STi[k][0] = 0;
-		StochInt(STi, X[m], WDiff[m], Sprue[m]);
-		if (m % 30 == 0)
-			printf("StochInt generieren: %d Prozent fertig\r",
-					(m - mAnfang) * 100 / (mEnde - mAnfang));
-		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex)
-			for (int k = 0; k < K; ++k)
-				StochIntegrals[k][m][ex] = STi[k][Exercise_Dates[ex]]; // Achtung
-			//		if(m%100==0)printf("%.0lf\%",m/(double)(mEnde-mAnfang));
-	}
-}
-
-void* DLEGATE_BFGS_StochIntegrieren(void* data) {
-	zeiger->BFGS_StochIntgenerieren(((int*) data)[0]);
-	pthread_exit(NULL);
-	return NULL;
-}
-
-void AmericanOption::BFGS_setting() {
-	neueExerciseDates(Training_Dates);
-
-	sup_glatt = (double*) malloc(sizeof(double) * M);
-	gradient = DoubleFeld(K, M);
-
-	if (verbose)
-		printf("Felder allocieren\n");
-	alpha = (double*) malloc(sizeof(double) * (K));
-
-	if (verbose)
-		printf("Zufallszahlen allocieren\n");
-	WDiff = DoubleFeld(M, N, D);
-
-	if (verbose)
-		printf("Spruenge allocieren\n");
-	Sprue = DoubleFeld(M, N, D);
-
-	if (verbose)
-		printf("Pfade allocieren\n");
-	X = DoubleFeld(M, N, D);
-
-	if (verbose)
-		printf("StochInt allocieren\n");
-	StochIntegrals = (MTYP***) malloc(sizeof(MTYP**) * K);
-	for (int k = 0; k < K; ++k) {
-		StochIntegrals[k] = (MTYP**) malloc(sizeof(MTYP*) * M);
+void AmericanOption::StochInt_erstellen() {
+	StochIntegrals = DoubleFeld(K, M, N);
+	for (int k = 0; k < K; ++k)
 		for (int m = 0; m < M; ++m)
-			StochIntegrals[k][m] = (MTYP*) malloc(
-					sizeof(MTYP) * number_of_Exercise_Dates);
-	}
+			StochIntegrals[k][m][0] = 0;
 
-	srand(time(NULL));
-	MT.seed(time(NULL));
-	if (verbose)
-		printf("Zufallszahlen erstellen\n");
-	for (int m = 0; m < M; ++m)
-		for (int n = 0; n < N; ++n) {
-			for (int j = 0; j < D; ++j) {
-				if (antithetics && m % 2 == 1)
-					WDiff[m][n][j] = WDiff[m - 1][n][j] * -1.;
-				else
-					WDiff[m][n][j] = sqrt(dt) * nextGaussian();
-				int NumberOfJumps = Poisson(lambdaJump * dt);
-				Sprue[m][n][j] = 0;
-				for (int jump = 0; jump < NumberOfJumps; ++jump)
-					Sprue[m][n][j] += newSprung();
+	for (int m = 0; m < M; ++m) {
+		if (m % 10 == 0) {
+			printf("StochInt erstellen ... %d %% \r", m * 100 / M);
+			cout.flush();
+		}
+		for (int k = 0; k < K; ++k) {
+			for (int n = 1; n < N; ++n) {
+				double summe = 0;
+				for (int d = 0; d < D; ++d)
+					summe += f(k, X[m], n - 1, d) * WDiff[m][n][d];
+				//	* (stoppzeiten[m] >= n); //TODO Achtung
+				StochIntegrals[k][m][n] = StochIntegrals[k][m][n - 1] + summe;
 			}
 		}
-
-	zeiger = this;
-	pthread_t threads[Threadanzahl];
-	// Alle Threads starten
-	for (int i = 0; i < Threadanzahl; i++) {
-		int* z = (int*) malloc(sizeof(int));
-		z[0] = i;
-		pthread_create(&threads[i], NULL, DLEGATE_BFGS_StochIntegrieren,
-				(void*) z);
-		//                       Argument für thread_function ---^
 	}
-
-	// Hier wird gewartet bis alle Threads beendet sind.
-	for (int i = 0; i < Threadanzahl; i++) {
-		pthread_join(threads[i], NULL);
-	}
+	printf("StochInt erstellen ... fertig\n");
 }
+
+//void AmericanOption::BFGS_setting() {
+//
+//	sup_glatt = (double*) malloc(sizeof(double) * M);
+//	gradient = DoubleFeld(K, M);
+//
+//	if (verbose)
+//		printf("Felder allocieren\n");
+//	alpha = (double*) malloc(sizeof(double) * (K));
+//
+//	if (verbose)
+//		printf("Zufallszahlen allocieren\n");
+//	WDiff = DoubleFeld(M, N, D);
+//
+//	if (verbose)
+//		printf("Spruenge allocieren\n");
+//	Sprue = DoubleFeld(M, N, D);
+//
+//	if (verbose)
+//		printf("Pfade allocieren\n");
+//	X = DoubleFeld(M, N, D);
+//
+//	if (verbose)
+//		printf("StochInt allocieren\n");
+//	StochIntegrals = (MTYP***) malloc(sizeof(MTYP**) * K);
+//	for (int k = 0; k < K; ++k) {
+//		StochIntegrals[k] = (MTYP**) malloc(sizeof(MTYP*) * M);
+//		for (int m = 0; m < M; ++m)
+//			StochIntegrals[k][m] = (MTYP*) malloc(
+//					sizeof(MTYP) * number_of_Exercise_Dates);
+//	}
+//
+//	srand(time(NULL));
+//	MT.seed(time(NULL));
+//	if (verbose)
+//		printf("Zufallszahlen erstellen\n");
+//	for (int m = 0; m < M; ++m)
+//		for (int n = 0; n < N; ++n) {
+//			for (int j = 0; j < D; ++j) {
+//				if (antithetics && m % 2 == 1)
+//					WDiff[m][n][j] = WDiff[m - 1][n][j] * -1.;
+//				else
+//					WDiff[m][n][j] = sqrt(dt) * nextGaussian();
+//				int NumberOfJumps = Poisson(lambdaJump * dt);
+//				Sprue[m][n][j] = 0;
+//				for (int jump = 0; jump < NumberOfJumps; ++jump)
+//					Sprue[m][n][j] += newSprung();
+//			}
+//		}
+//
+//	zeiger = this;
+//	pthread_t threads[Threadanzahl];
+//// Alle Threads starten
+//	int* z = new int[Threadanzahl];
+//	for (int i = 0; i < Threadanzahl; i++) {
+//		z[i] = i;
+//		pthread_create(&threads[i], NULL, DLEGATE_BFGS_StochIntegrieren,
+//				(void*) &(z[i]));
+//		//                       Argument für thread_function ---^
+//	}
+//
+//// Hier wird gewartet bis alle Threads beendet sind.
+//	for (int i = 0; i < Threadanzahl; i++) {
+//		pthread_join(threads[i], NULL);
+//	}
+//
+//	delete[] z;
+//}
 
 void AmericanOption::BFGS_parallelTesting(double number_of_replications) {
 	Daten();
@@ -434,7 +577,7 @@ void AmericanOption::BFGS_parallelTesting(double number_of_replications) {
 }
 
 double AmericanOption::BFGS_testing(double number_of_replications) {
-	neueExerciseDates(Testing_Dates);
+//	neueExerciseDates(Testing_Dates); //Achtung fehlt
 	MT.seed(time(NULL) + getpid());
 	srand(time(NULL) + getpid());
 	if (!nesterov && !bfgs) {
@@ -444,7 +587,7 @@ double AmericanOption::BFGS_testing(double number_of_replications) {
 	} else if (verbose && !parallelTest)
 		printf("alphas vorhanden");
 
-	//Alphas ausgeben
+//Alphas ausgeben
 	if (verbose && !parallelTest) {
 		printf("alpha=[");
 		for (int k = 0; k < K; ++k)
@@ -452,7 +595,7 @@ double AmericanOption::BFGS_testing(double number_of_replications) {
 		printf("]\n");
 	}
 
-	//Felder fuer je 1 replication
+//Felder fuer je 1 replication
 	double** stochintegrals = DoubleFeld(K, N);
 	double** x = DoubleFeld(N, D);
 	double** wdiff = DoubleFeld(N, D);
@@ -520,112 +663,98 @@ void AmericanOption::StochInt(double** STi, double** X, double** WDiff,
 		}
 }
 
+void AmericanOption::Wdiff_und_X_erstellen() {
+	RNG generator;
+	//generator.setSeed(seed);
+	WDiff = DoubleFeld(M, N, D);
+	X = DoubleFeld(M, N, D);
+
+	for (int m = 0; m < M; ++m) {
+//		if (m % 10 == 0) {
+//			printf("X erstellen ... %d %%            \r", m * 100 / M);
+//			cout.flush();
+//		}
+
+		{
+			for (int n = 0; n < N; ++n)
+				for (int d = 0; d < D; ++d)
+					WDiff[m][n][d] = generator.nextGaussian() * sqrt(dt);
+			Pfadgenerieren(X[m], WDiff[m], 0, X0);
+		}
+	}
+
+	printf("X erstellen ... fertig\n");
+}
+
+void AmericanOption::testen() {
+	double erg = 0;
+	int lauf = 0;
+	double** xx = DoubleFeld(N, D);
+	double** wdiff = DoubleFeld(N, D);
+	RNG generator;
+
+	while (true) {
+		for (int n = 0; n < N; ++n)
+			for (int d = 0; d < D; ++d)
+				wdiff[n][d] = sqrt(dt) * generator.nextGaussian();
+
+		Pfadgenerieren(xx, wdiff);
+		lauf++;
+		int stopp = number_of_Exercise_Dates - 1;
+		for (int n = 1; n < number_of_Exercise_Dates - 1; ++n)
+			if (payoff(xx, Exercise_Dates[n])
+					> LSM_C_estimated(xx[Exercise_Dates[n]], n)) { //TODO Achtung
+				stopp = n;
+				break;
+			}
+		erg = (erg * (double) (lauf - 1) + payoff(xx, Exercise_Dates[stopp]))
+				/ (double) (lauf);
+
+		if (lauf % 100 == 0) {
+			printf("Stoppzeit testen ... %f %% \r", erg);
+			cout.flush();
+		}
+
+	}
+}
+
 void AmericanOption::BFGS() {
-//
-//printf("BFGS ausgeschaltet\n");
+	LongstaffSchwartz();
+//	testen();
+//	exit(0);
+	Wdiff_und_X_erstellen();
+//	stoppzeiten_erstellen();
+//exit(0);
+	StochInt_erstellen();
 
 	BFGS_Iterations = 200;
 	zeiger = this;
-	BFGS_setting();
+
+//	BFGS_setting();
 
 	real_1d_array x;
 	x.setlength(K);
 	for (int k = 0; k < K; ++k)
 		x[k] = 0;
-	if (loadAlphas) {
-		if (verbose)
-			printf("alphas laden");
-		double* alpha = alphasLaden(K);
-		for (int k = 0; k < K; ++k)
-			x[k] = alpha[k];
-	}
 
-	if (speedup) {
-		int M_store = M;
-
-		//if(Training_Dates>20)neueExerciseDates(Training_Dates/5);
-		M = M_store / 300;
-		{
-			if (verbose)
-				printf("L-BFGS probelauf\n");
-			double epsg = 0;
-			double epsf = 0;
-			double epsx = 0;
-			ae_int_t maxits = 50;
-			mincgstate state;
-			mincgreport rep;
-			mincgcreate(x, state);
-			mincgsetcond(state, epsg, epsf, epsx, maxits);
-			alglib::mincgoptimize(state, Delegate_static_objfs);
-			mincgresults(state, x, rep);
-			printf("Termination Type(expected 4): %d\n",
-					int(rep.terminationtype));
-		}
-
-		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
-		M = M_store / 30;
-		{
-			if (verbose)
-				printf("L-BFGS probelauf\n");
-			double epsg = 0;
-			double epsf = 0;
-			double epsx = 0;
-			ae_int_t maxits = 15;
-			mincgstate state;
-			mincgreport rep;
-			mincgcreate(x, state);
-			mincgsetcond(state, epsg, epsf, epsx, maxits);
-			alglib::mincgoptimize(state, Delegate_static_objfs);
-			mincgresults(state, x, rep);
-			printf("Termination Type(expected 4): %d\n",
-					int(rep.terminationtype));
-		}
-
-		//if(Training_Dates>20)neueExerciseDates(Training_Dates/3);
-		M = M_store / 10;
-		{
-			if (verbose)
-				printf("L-BFGS probelauf\n");
-			double epsg = 0;
-			double epsf = 0;
-			double epsx = 0;
-			ae_int_t maxits = 15;
-			mincgstate state;
-			mincgreport rep;
-			mincgcreate(x, state);
-			mincgsetcond(state, epsg, epsf, epsx, maxits);
-			alglib::mincgoptimize(state, Delegate_static_objfs);
-			mincgresults(state, x, rep);
-			printf("Termination Type(expected 4): %d\n",
-					int(rep.terminationtype));
-		}
-
-		//if(Training_Dates>20)neueExerciseDates(Training_Dates/2);
-		M = M_store / 2;
-		{
-			if (verbose)
-				printf("L-BFGS probelauf\n");
-			double epsg = 0;
-			double epsf = 0;
-			double epsx = 0;
-			ae_int_t maxits = 5;
-			mincgstate state;
-			mincgreport rep;
-			mincgcreate(x, state);
-			mincgsetcond(state, epsg, epsf, epsx, maxits);
-			alglib::mincgoptimize(state, Delegate_static_objfs);
-			mincgresults(state, x, rep);
-			printf("Termination Type(expected 4): %d\n",
-					int(rep.terminationtype));
-		}
-		speedup = false;
-		M = M_store;
-		neueExerciseDates(Training_Dates);
-	}
-
-	min = 1000000;
-	if (verbose)
+	{
 		printf("L-BFGS starten\n");
+		M /= 50;
+		double epsg = 0.000001;
+		double epsf = 0;
+		double epsx = 0;
+		ae_int_t maxits = 20;
+		mincgstate state;
+		mincgreport rep;
+		mincgcreate(x, state);
+		mincgsetcond(state, epsg, epsf, epsx, maxits);
+		alglib::mincgoptimize(state, Delegate_static_objfs);
+		mincgresults(state, x, rep);
+		printf("Termination Type(expected 4): %d\n", int(rep.terminationtype));
+		M *= 50;
+	}
+
+	printf("L-BFGS starten\n");
 	double epsg = 0.000001;
 	double epsf = 0;
 	double epsx = 0;
@@ -640,6 +769,7 @@ void AmericanOption::BFGS() {
 
 	for (int k = 0; k < K; ++k)
 		alpha[k] = x[k];
+
 }
 
 void AmericanOption::BFGS_extremeTesting(int l, double number_of_replications) {

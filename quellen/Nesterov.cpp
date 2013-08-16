@@ -157,7 +157,7 @@ void AmericanOption::Nesterov()
 	Nesterov_L=3000;
 
 	zeiger2=this;
-	BFGS_setting();
+	//BFGS_setting();
 	Daten();
 
 	if(testing  || extremTest)Nesterov_Iterations=BFGS_Iterations-2;
@@ -203,7 +203,7 @@ void AmericanOption::Nesterov()
 		}
 		}else M=M_store;
 		TQlauf=argMinlauf=lauf;
-		objfs_aufrufen(x[lauf],fx[lauf],Dfx[lauf]);
+	//	objfs_aufrufen(x[lauf],fx[lauf],Dfx[lauf]); //TODO einfach ausgemacht
 
 
 		//	printf("fx_%d = %.4lf (Minimum: %.4lf, diff: %.4lf)\n",lauf,fx[lauf],min, min-fx[lauf]);//printf("fx_%d= %f  (=%f)\n",lauf,fx[lauf],tan(fx[lauf]));

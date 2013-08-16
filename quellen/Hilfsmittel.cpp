@@ -656,5 +656,47 @@ double* LGSloesen(double** AA, double* bb, int Mphi){
 
 
 
+double* gauss(double** AA, double* bb, int Mphi) {
+	double** A = new double*[Mphi];
+	for (int m = 0; m < Mphi; ++m)
+		A[m] = new double[Mphi];
+
+	for (int m = 0; m < Mphi; ++m)
+		for (int n = 0; n < Mphi; ++n)
+			A[m][n] = AA[m][n];
+
+	double* b = new double[Mphi];
+	for (int m = 0; m < Mphi; ++m)
+		b[m] = bb[m];
+// loest das LGS Ax = b nach x auf
+
+	double** B = DoubleFeld(Mphi, Mphi);
+	for (int i = 0; i < Mphi; ++i)
+		for (int j = 0; j < Mphi; ++j)
+			B[i][j] = A[i][j];
+	double* x = DoubleFeld(Mphi);
+	for (int i = 0; i < Mphi; ++i)
+		x[i] = b[i];
+
+	int* piv = pivot(B, Mphi);
+	int nn = Mphi;
+	for (int i = 0; i < nn - 1; i++) {
+		double h = b[piv[i]];
+		b[piv[i]] = b[i];
+		b[i] = h;
+	}
+	for (int j = 0; j < nn; j++) {
+		x[j] = b[j];
+		for (int i = 0; i < j; i++)
+			x[j] -= B[j][i] * x[i];
+	}
+	for (int j = nn - 1; j >= 0; j--) {
+		for (int k = j + 1; k < nn; k++)
+			x[j] -= B[j][k] * x[k];
+		x[j] /= B[j][j];
+	}
+	return x;
+
+}
 
 

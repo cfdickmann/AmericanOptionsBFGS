@@ -24,6 +24,8 @@
 #include "../alglib/ap.h"
 #include "../alglib/optimization.h"
 
+#include "EuroBewerter.h"
+
 #include "RNG.h"
 #include "MTRand.h"
 #include "math.h"
@@ -51,6 +53,7 @@ public:
 	time_t Anfangszeit;
 	int BFGS_Iterations;
 
+	EuroBewerter EB;
 	int option; // MAX_CALL or MIN_PUT
 	double delta; //dividend yield
 	double* X0; // Spot
@@ -65,19 +68,23 @@ public:
 	double theta; // for mean reversion
 
 	double rho;
-	int Testing_Dates;
-	int Training_Dates;
+//	int Testing_Dates;
+//	int Training_Dates;
 	int N; //time discretization
 	int D;
-	int K1;
-	int K2;
-	int K3;
-	int K4;
-	int K5;
 	int M; // numer of training paths for BFGS
 	int BFGS_Nesterov_Intervals;
 
 	double min;
+
+	double trueE(double x, int n);
+
+	double obj(double * alpha);
+	void Wdiff_und_X_erstellen();
+	void StochInt_erstellen();
+
+	int* stoppzeiten;
+	void stoppzeiten_erstellen();
 
 	int K; //K=NN*5+1; //Anzahl der Basisfunktionen
 	double dt;
@@ -109,6 +116,8 @@ public:
 	double** gradient;
 	double* sup_glatt;
 
+void testen();
+
 int KpI;
 int NpI;
 
@@ -135,6 +144,7 @@ int NpI;
 	double nextGaussian();
 	int Poisson(double theta);
 	double payoff(double* x, int time);
+	double payoff(double** x, int time);
 	double* payoffAbl(double* x, int time);
 
 	double Upayoff(double* x, int time);
@@ -187,13 +197,13 @@ int NpI;
 	void LSM_setting();
 	void LongstaffSchwartz();
 	void LSM_mittelwert(int threadnummer);
-	double LSM_C_estimated(double* x, int time);
+	double LSM_C_estimated(double* x, int ex);
 	double LSM_phi(double* x, int j, int time);
 	double **V;
 	int Mphi;
 	double** betas;
-	double*** B;
-	double** BV;
+	double** B;
+	double* BV;
 	int LSlauf;
 	bool mlsm;
 	int LSM_K0;

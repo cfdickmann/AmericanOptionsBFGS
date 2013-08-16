@@ -16,6 +16,7 @@ int argMin(double* v, int l);
 int argZweiter(double* v, int l);
 int argDritter(double* v, int l);
 int argMax(double* v, int l);
+double* gauss(double** AA, double* bb, int Mphi);
 
 void MatrixAusgeben(double**  a, int D);
 double** MatrixMultiplizieren(double**  a,double**  b,int D);
