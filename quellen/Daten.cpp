@@ -23,14 +23,14 @@ void AmericanOption::Daten(){
 		T = 3;
 //		Testing_Dates=40;
 //		Training_Dates=40;
-		N = 21;
-		KpI=1;
-		M=10000;
+		N = 8;
+		KpI=6;
+		M=1000;
 	}
 
-    BFGS_Nesterov_Intervals=10;
+    BFGS_Nesterov_Intervals=4;
 	Threadanzahl=10;
 
 
-	NpI=(N-1)/BFGS_Nesterov_Intervals;
+	NpI=N/BFGS_Nesterov_Intervals;
 }

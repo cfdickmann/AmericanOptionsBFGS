@@ -76,9 +76,6 @@ int main( int argc, char* args[]) {
 		if (AMO.andersenbroadie)AMO.AndersenBroadie();
 		if (AMO.bfgs)AMO.BFGS();
 		if (AMO.nesterov)AMO.Nesterov();
-		if (AMO.testing)AMO.BFGS_testing(50000.);
-		if (AMO.parallelTest)AMO.BFGS_parallelTesting(50000.);
-		if (AMO.extremTest)AMO.BFGS_extremeTesting(25, 50000.);
-		if (AMO.semiinf)AMO.semi();
+
 	}
 }

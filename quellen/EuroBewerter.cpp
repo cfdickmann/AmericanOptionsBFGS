@@ -69,8 +69,8 @@ double EuroBewerter::call_diff(double t, double T, double X0, double Strike,
 		double r, double delta, double sigma) {
 	double f=call(t,T,X0,Strike,r,delta,sigma);
 
-	double fh=call(t,T,X0+0.0001,Strike,r,delta,sigma);
-	return (fh-f)/0.0001;
+	double fh=call(t,T,X0+0.00001,Strike,r,delta,sigma);
+	return (fh-f)/0.00001;
 	}
 
 

@@ -112,8 +112,17 @@ double AmericanOption::f(int k, double **x, int n, int d) {
 // return 0;
 //	return 1.;
 	//return 1;
+double maxI=0;
+for(int nn=n;nn<N;nn++)
+{
+	double eur=EB.call((double)nn*dt,1.001*T,x[n][0],Strike,r,delta,sigma[0]);
+	if(eur>maxI)maxI=nn;
+}
 
-	if (k / KpI !=	 n / NpI)
+	if(k==0)return EB.call_diff((double)maxI*dt,1.001*T,x[n][0],Strike,r,delta,sigma[0])*x[n][0];
+
+//	double pi=3.1415926;
+	if (k / KpI !=	n / NpI)
 		return 0;
 
 //	double y[D];
@@ -123,18 +132,28 @@ double AmericanOption::f(int k, double **x, int n, int d) {
 	int kAC = k % KpI;
 
 	if (D == 1){
-//		if(kAC==0) return pos(x[n][0]-Strike);
-//		return trig(0.005*x[n][0],kAC);
-if(kAC==0)		return EB.call_diff((double)n*dt,T,x[n][0],Strike,r,delta,sigma[0])*x[n][0];
+//return 0;
+//		return 1*x[n][0];
 
-//		return (x[n][0]>Strike*3.*(double)(kAC)/(double)(KpI))*x[n][0] ;
+//		double r=(double)(kAC)/(double)(KpI);
+//		if(kAC==0)	return (atan(0.2*(x[n][0]-Strike))+pi/2.)*x[n][0];
+//				return 1./(1.+pow(x[n][0]-(double)(kAC)/(double)(K)*3.*Strike,2))*x[n][0];
+//		return pos(x[n][0]-(double)(kAC)/(double)(KpI)*Strike);
 
-
+//		return (atan(r*2.*(x[n][0]-Strike))+pi/2.)*x[n][0];
+//		return pos(x[n][0]-Strike)*x[n][0];
+//		return (x[n][0]>Strike*3.*(double)(kAC)/(double)(KpI)  && x[n][0]<=Strike*3.*(double)(kAC+1)/(double)(KpI) )*x[n][0] ;
+//		return (x[n][0]>Strike*0.8+0.4*Strike*(double)(kAC-10)/(double)(KpI-10))*x[n][0] ;
 //return (trueE(x[n][0]+0.000001,n)-trueE(x[n][0],n))/0.000001*x[n][0];
-//		if(kAC==0)return EB.call_diff(n*dt,1.0*T,x[n][0],Strike,r,delta,sigma[0])*x[n][0];
-//		if(kAC==1)return EB.call_diff(n*dt,1.2*T,x[n][0],Strike,r,delta,0.7*sigma[0])*x[n][0];
-//		if(kAC==2)return EB.call_diff(n*dt,1.8*T,x[n][0],Strike,r,delta,1.2*sigma[0])*x[n][0];
-
+//		if(kAC==0)
+//			return EB.call_diff(n*dt,1.00001*T,x[n][0],Strike,r,delta,sigma[0])*x[n][0];
+//		return 1./(1.+0.01*pow(x[n][0]-Strike,2))*trig(0.01*(x[n][0]-Strike),kAC);
+		if(kAC==1)return EB.call_diff(n*dt,1.05*T,x[n][0]+1.,Strike,r,delta,sigma[0])*x[n][0];
+		if(kAC==2)return EB.call_diff(n*dt,1.05*T,x[n][0]+3.,Strike,r,delta,sigma[0])*x[n][0];
+		if(kAC==3)return EB.call_diff(n*dt,1.15*T,x[n][0]+5.,Strike,r,delta,sigma[0])*x[n][0];
+		if(kAC==4)return EB.call_diff(n*dt,1.15*T,x[n][0]+10.,Strike,r,delta,sigma[0])*x[n][0];
+		if(kAC==5)return EB.call_diff(n*dt,1.31*T,x[n][0]+15.,Strike,r,delta,sigma[0])*x[n][0];
+		if(kAC==0)return EB.call_diff(n*dt,1.31*T,x[n][0]+30.,Strike,r,delta,sigma[0])*x[n][0];
 //		return (x[n][0]>Strike?1:0);
 //		if(k==0) return EB.call_diff((double)dt*n,1.0*T,x[n][0],Strike,r,delta,sigma[0])*x[n][0];
 //		if(k==1) return EB.call_diff((double)dt*n,1.2*T,x[n][0],Strike,r,delta,0.8*sigma[0])*x[n][0];
@@ -143,8 +162,6 @@ if(kAC==0)		return EB.call_diff((double)n*dt,T,x[n][0],Strike,r,delta,sigma[0])*
 ////		else
 //		return f1D(x[n][0], kAC-1, d);
 //		(2.*(double)(k)/(double)K)
-
-
 	}
 
 
