@@ -64,14 +64,30 @@ double maxi(double x, double y) {
 	return x < y ? y : x;
 }
 
-
 double EuroBewerter::call_diff(double t, double T, double X0, double Strike,
 		double r, double delta, double sigma) {
-	double f=call(t,T,X0,Strike,r,delta,sigma);
+	double f = call(t, T, X0, Strike, r, delta, sigma);
 
-	double fh=call(t,T,X0+0.00001,Strike,r,delta,sigma);
-	return (fh-f)/0.00001;
-	}
+	double fh = call(t, T, X0 + 0.00001, Strike, r, delta, sigma);
+	return (fh - f) / 0.00001;
+}
+
+double EuroBewerter::put_diff(double t, double T, double X0, double Strike,
+		double r, double delta, double sigma) {
+	double f = put(t, T, X0, Strike, r, delta, sigma);
+	double fh = put(t, T, X0 + 0.000001, Strike, r, delta, sigma);
+	return (fh - f) / 0.000001;
+}
+
+
+double EuroBewerter::put_diff2(double t, double T, double X0, double Strike,
+		double r, double delta, double sigma) {
+//	double r_Strich = r - delta;
+//		double T_Strich = T - t;
+		double d1 = (log(X0 / Strike) + (r - delta + sigma * sigma / 2) *  (T - t))
+				/ (sigma * sqrt(T - t));
+		return exp(-(r-delta)*t)*exp(-T*delta)*(-cnd(-d1));
+}
 
 
 // mein call
@@ -85,7 +101,6 @@ double EuroBewerter::call(double t, double T, double X0, double Strike,
 	return exp(-delta * T) * exp(-r * t)
 			* (X0 * cnd(d1) - Strike * exp(-r * T) * cnd(d2));
 }
-
 
 ////Call vom Nikolaus
 //double EuroBewerter::call(double t, double T, double X0, double Strike,
@@ -110,12 +125,10 @@ double EuroBewerter::call(double t, double T, double X0, double Strike,
 //			* ( cnd(d1));
 //}
 
-
 //double EuroBewerter::call_diff(double t, double T, double X0, double Strike,
 //		double r, double delta, double sigma) {
 //return
 //}
-
 
 double EuroBewerter::put(double t, double T, double X0, double Strike, double r,
 		double delta, double sigma) {
@@ -124,7 +137,16 @@ double EuroBewerter::put(double t, double T, double X0, double Strike, double r,
 	double d1 = (log(X0 / Strike) + (r + sigma * sigma / 2) * T)
 			/ (sigma * sqrt(T));
 	double d2 = d1 - sigma * sqrt(T);
-	return exp(-delta * T) * (Strike * exp(-r * T) * cnd(-d2) - X0 * cnd(-d1));
+	return exp(-(r+delta)*t)*(exp(-delta * T) * (Strike * exp(-r * T) * cnd(-d2) - X0 * cnd(-d1)));
+}
+
+double EuroBewerter::max_call_diff(double t, double T, double* X0, int D,
+		double Strike, double r, double delta, double sigma, int d) {
+	double f = max_call(t, T, X0, D, Strike, r, delta, sigma);
+	X0[d]+=0.000001;
+	double fh = max_call(t, T, X0, D, Strike, r, delta, sigma);
+	X0[d]-=0.000001;
+	return (fh - f) / 0.000001;
 }
 
 double EuroBewerter::max_call(double t, double T, double* X0, int D,

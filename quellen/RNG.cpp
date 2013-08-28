@@ -6,13 +6,11 @@
  */
 
 #include "RNG.h"
-#include "math.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 RNG::RNG() {
     int r = rand();
     setSeed(getpid() + r + time(NULL));
+setSeed(1);
 }
 
 RNG::RNG(const RNG& orig) {
@@ -23,6 +21,8 @@ RNG::~RNG() {
 
 void RNG::setSeed(int seed) {
     mt.init_genrand(seed);
+    seed=1;
+//    srand(seed);
     // Ein Mersennetwister braucht bei schlechten seeds bis zu
     // 600 Durchlaeufe um auf Temperatur zu kommen.
     for (int lauf = 0; lauf < 600; ++lauf)
@@ -38,6 +38,7 @@ double RNG::BoxMuller(double U1, double U2) {
 
 double RNG::nextUnif() {
     return mt.random();
+   // return (double)(rand()%10000)/10000.;
 }
 
 double RNG::nextGaussian() {

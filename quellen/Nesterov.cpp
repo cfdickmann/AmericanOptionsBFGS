@@ -75,19 +75,19 @@ void AmericanOption::Nesterov(double* alpha, double L, int iterations) {
 
 		//Schritt 3
 		z[lauf] = argminProblem(lauf);
-		if (verbose) {
-			printf("z_%d =   ", lauf);
-			ausgeben(z[lauf], K);
-		}
+//		if (verbose) {
+//			printf("z_%d =   ", lauf);
+//			ausgeben(z[lauf], K);
+//		}
 
 		//Schritt 4
 		for (int k = 0; k < K; ++k)
 			x[lauf + 1][k] = 2. / ((double) lauf + 3.) * z[lauf][k]
 					+ ((double) lauf + 1.) / ((double) lauf + 3.) * y[lauf][k];
-		if (verbose) {
-			printf("x_%d+1 = ", lauf);
-			ausgeben(x[lauf + 1], K);
-		}
+//		if (verbose) {
+//			printf("x_%d+1 = ", lauf);
+//			ausgeben(x[lauf + 1], K);
+//		}
 		for (int k = 0; k < K; ++k)
 			alpha[k] = y[lauf][k];
 	}

@@ -23,6 +23,10 @@ int main( int argc, char* args[]) {
 	int runden=1;
 	AmericanOption AMO;
 
+	EuroBewerter EB;
+//	printf("EeaB: %f\n",EB.put(0.,3.,100,100,0.05,0.15,0.2));
+//	printf("EB: %f\n",EB.put(0.1,3.1,100,100,0.05,0.15,0.2));
+
 //	if (argc == 1) {
 //		printInfo();
 //		int auswahl = 6;
@@ -48,7 +52,7 @@ int main( int argc, char* args[]) {
 //		if(! arg.compare("-extremeTesting"))        {geaendert=true;AMO.extremTest=true;}
 //		if(! arg.compare("-parallelTesting"))       {geaendert=true;AMO.parallelTest=true;}
 		if(! arg.compare("-Nesterov"))              {geaendert=true;AMO.nesterov=true;}
-		if(! arg.compare("-verbose"))               {geaendert=true;AMO.verbose=true;}
+//		if(! arg.compare("-verbose"))               {geaendert=true;AMO.verbose=true;}
 //		if(! arg.compare("-loadAlphas"))            {geaendert=true;AMO.loadAlphas=true;}
 		if(! arg.compare("-zehnmal"))               {geaendert=true;runden=10;};
 		if(! arg.compare("-fuenfzigmal"))           {geaendert=true;runden=50;};
@@ -69,7 +73,7 @@ int main( int argc, char* args[]) {
 
 	for(int i=0;i<runden;++i){
 		if (AMO.longstaffschwarz)AMO.LongstaffSchwartz();
-		if (AMO.bfgs)AMO.BFGS();
+		if (AMO.bfgs)AMO.BFGS_aufrufen();
 		if (AMO.nesterov)AMO.Nesterov_aufrufen();
 
 	}

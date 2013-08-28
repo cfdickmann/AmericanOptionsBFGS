@@ -15,11 +15,20 @@ public:
 	EuroBewerter();
 	virtual ~EuroBewerter();
 
-	double call(double t, double T, double X0, double Strike, double r, double delta, double sigma);
-	double call_diff(double t, double T, double X0, double Strike, double r, double delta, double sigma);
-	double put(double t, double T, double X0, double Strike, double r, double delta, double sigma);
-	double max_call(double t, double T, double* X0, int D, double Strike, double r, double delta, double sigma);
+	double call(double t, double T, double X0, double Strike, double r,
+			double delta, double sigma);
+	double call_diff(double t, double T, double X0, double Strike, double r,
+			double delta, double sigma);
+	double put(double t, double T, double X0, double Strike, double r,
+			double delta, double sigma);
+	double put_diff(double t, double T, double X0, double Strike, double r,
+			double delta, double sigma);
+	double put_diff2(double t, double T, double X0, double Strike, double r,
+			double delta, double sigma);
+	double max_call(double t, double T, double* X0, int D, double Strike,
+			double r, double delta, double sigma);
+	double max_call_diff(double t, double T, double* X0, int D, double Strike,
+			double r, double delta, double sigma, int d);
 };
-
 } /* namespace std */
 #endif /* EUROBEWERTER_H_ */
