@@ -29,6 +29,15 @@ public:
 			double r, double delta, double sigma);
 	double max_call_diff(double t, double T, double* X0, int D, double Strike,
 			double r, double delta, double sigma, int d);
+
+	//Margrabes Formel
+	double exchange_option(double x, double y, double t, double T,
+			double r, double delta, double sigma);
+	double exchange_option_diff(double x, double y, double t,
+			double T, double r, double delta, double sigma, int re);
+//	double exchange_option_diff2(double x, double y, double t,
+//			double T, double r, double delta, double sigma, int re);
+
 };
 } /* namespace std */
 #endif /* EUROBEWERTER_H_ */

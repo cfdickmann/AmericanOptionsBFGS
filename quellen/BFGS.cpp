@@ -22,7 +22,7 @@ double AmericanOption::obj(double * alpha) {
 			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
 //			d[ex] -= GrundIntegrals[m][Exercise_Dates[ex]];
 			for (int k = 0; k < K; ++k)
-				d[ex] -= alpha[k] * StochIntegrals[k][m][Exercise_Dates[ex]];
+				d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
 		}
 		ergETr += Max(d, number_of_Exercise_Dates) / (double) (M / 2);
 //		double s = 0;
@@ -53,8 +53,7 @@ double AmericanOption::obj(double * alpha) {
 				d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
 //			d[ex] -= GrundIntegrals[m][Exercise_Dates[ex]];
 				for (int k = 0; k < K; ++k)
-					d[ex] -= alpha[k]
-							* StochIntegrals[k][m][Exercise_Dates[ex]];
+					d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
 			}
 			ergETe += Max(d, number_of_Exercise_Dates) / (double) (M / 2);
 			stat[argMax(d, number_of_Exercise_Dates)]++;
@@ -73,37 +72,42 @@ double AmericanOption::obj(double * alpha) {
 //		printf("\n;");
 
 ////		if ((zaehler / K) % 5 == 0)
-		static int zzz = 0;
-		zzz++;
-		if (zzz % 10 == 0)
-		{
-			printf("schreiben\n");
-			fstream f;
-			f.open("mart.txt", ios::out);
-
-			double** xx = DoubleFeld(N, D);
-			double** yy = DoubleFeld(N, D);
-			for (int n = 0; n < number_of_Exercise_Dates; ++n) {
-				for (double x = 20; x < 170; x += 3) {
-					xx[Exercise_Dates[n]][0] = x;
-		yy[Exercise_Dates[n]][0]=log(x/Strike)/sqrt(T-n*dt+0.001);
-					double func = 0;
-//				func= grund(xx[n],n)/x;
-					for (int k = 0; k < K; ++k){
-						double* all=this->f_all(k, xx, yy, Exercise_Dates[n]);
-						if(all!=NULL){func += alpha[k] * all[0]/ x;
-								delete[]all;}
-					}
-					f << func << endl;
-
-				}
-				f << endl;
-			}
-			f.close();
-			deleteDoubleFeld(xx, N, D);
-			deleteDoubleFeld(yy, N, D);
-//		system("gnuplot plot.gnuplot");
-		}
+//		static int zzz = 0;
+//		zzz++;
+//		if (zzz % 10 == 0) {
+//			printf("schreiben\n");
+//			fstream f;
+//			f.open("mart.txt", ios::out);
+//
+//			double** xx = DoubleFeld(N, D);
+//			double** yy = DoubleFeld(N, D);
+//			int** rr = IntFeld(N, D);
+//			for (int n = 0; n < number_of_Exercise_Dates; ++n) {
+//				for (double x = 20; x < 170; x += 3) {
+//					xx[Exercise_Dates[n]][0] = x;
+//					rr[Exercise_Dates[n]][0] = 0;
+//					yy[Exercise_Dates[n]][0] = log(x / Strike)
+//							/ sqrt(T - n * dt + 0.001);
+//					double func = 0;
+////				func= grund(xx[n],n)/x;
+//
+//					for (int k = 0; k < K; ++k) {
+//						double* all = this->f_all(k, xx, yy, rr, Exercise_Dates[n]); //Hier lauert ein segmentation fault
+//						if (all != NULL) {
+//							func += alpha[k] * all[0] / x;
+//							delete[] all;
+//						}
+//					}
+//					f << func << endl;
+//				}
+//				f << endl;
+//			}
+//			f.close();
+//			deleteDoubleFeld(xx, N, D);
+//			deleteIntFeld(rr, N, D);
+//			deleteDoubleFeld(yy, N, D);
+////		system("gnuplot plot.gnuplot");
+//		}
 	}
 
 	return V;
@@ -120,7 +124,7 @@ double* AmericanOption::obj_diff(double * alpha) { // mit Glaettungsparameter oh
 		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
 			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
 			for (int k = 0; k < K; ++k)
-				d[ex] -= alpha[k] * StochIntegrals[k][m][Exercise_Dates[ex]];
+				d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
 		}
 
 		double s = 0;
@@ -130,13 +134,13 @@ double* AmericanOption::obj_diff(double * alpha) { // mit Glaettungsparameter oh
 		for (int k = 0; k < K; ++k) {
 			double S = 0;
 			for (int ex = 0; ex < number_of_Exercise_Dates; ++ex)
-				S += StochIntegrals[k][m][Exercise_Dates[ex]] * exp(p * d[ex]);
+				S += StochIntegrals[k][m][ex] * exp(p * d[ex]);
 			diffs[k] += -S / s / (double) (M / 2);
 		}
 	}
 	return diffs;
 }
-
+//
 //double* AmericanOption::obj_diff(double * alpha) { //ohne Glaettungsparameter
 //	double* diffs = new double[K];
 //
@@ -149,11 +153,11 @@ double* AmericanOption::obj_diff(double * alpha) { // mit Glaettungsparameter oh
 //			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
 ////			d[ex] -= GrundIntegrals[m][Exercise_Dates[ex]];
 //			for (int k = 0; k < K; ++k)
-//				d[ex] -= alpha[k] * StochIntegrals[k][m][Exercise_Dates[ex]];
+//				d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
 //		}
 //		int n_max = argMax(d, number_of_Exercise_Dates);
 //		for (int k = 0; k < K; ++k)
-//			diffs[k] += -StochIntegrals[k][m][Exercise_Dates[n_max]]
+//			diffs[k] += -StochIntegrals[k][m][n_max]
 //					/ (double(M) * 2);
 //	}
 //	return diffs;
@@ -250,6 +254,7 @@ void AmericanOption::Wdiff_und_X_erstellen() {
 	WDiff = DoubleFeld(M, N, D);
 	X = DoubleFeld(M, N, D);
 	Y = DoubleFeld(M, N, D);
+	reihe=IntFeld(M,N,D);
 
 	for (int m = 0; m < M; ++m) {
 		if (m % 10 == 0) {
@@ -281,6 +286,16 @@ void AmericanOption::Wdiff_und_X_erstellen() {
 	}
 
 	printf("Y erstellen ... fertig\n");
+	for (int m = 0; m < M; ++m) {
+		if (m % 10 == 0) {
+			printf("reihe erstellen ... %d %%            \r", m * 100 / M);
+			cout.flush();
+		}
+			for (int n = 0; n < N; ++n)
+				reihe[m][n]=BubbleSort(X[m][n],D);
+	}
+
+	printf("reihe erstellen ... fertig\n");
 }
 
 void AmericanOption::testen() {
@@ -396,12 +411,12 @@ void AmericanOption::BFGS_aufrufen() {
 //		alpha[k] = 1.0/(double)(K)*sigma[0];
 //
 //
-	double gamma[29] = { 0.270214964, 0.262294286, 0.002871799, -0.246069280,
-			-0.399297234, -0.170046342, -0.171978632, 0.172005816, 0.645239092,
-			0.236397054, -0.313426534, -0.162664364, -0.367309602, 1.350555822,
-			0.324501753, -0.602584800, 0.460306357, -1.600847590, -0.087618737,
-			-0.262300287, -0.768527750, 2.017575277, 0.460799091, -0.859946013,
-			0.023943856, -0.058172667, -0.148199704, 0.059818865, 0.091840144 };
+//	double gamma[29] = { 0.270214964, 0.262294286, 0.002871799, -0.246069280,
+//			-0.399297234, -0.170046342, -0.171978632, 0.172005816, 0.645239092,
+//			0.236397054, -0.313426534, -0.162664364, -0.367309602, 1.350555822,
+//			0.324501753, -0.602584800, 0.460306357, -1.600847590, -0.087618737,
+//			-0.262300287, -0.768527750, 2.017575277, 0.460799091, -0.859946013,
+//			0.023943856, -0.058172667, -0.148199704, 0.059818865, 0.091840144 };
 
 //	double beta[55]={
 //	0.277948720416063,
@@ -464,7 +479,7 @@ void AmericanOption::BFGS_aufrufen() {
 ////	for (int k = 0; k < K; ++k)
 ////			alpha[k] = 1.0/(double)(K)*sigma[0];
 //
-	printf("mit gegebenen koeff: %f\n", obj(gamma));
+//	printf("mit gegebenen koeff: %f\n", obj(gamma));
 //exit(0);
 
 //	printf("\n\nobjfs %f\n\n", obj(alpha));
@@ -474,21 +489,33 @@ void AmericanOption::BFGS_aufrufen() {
 	M *= 10;
 	BFGS(alpha);
 
-//Testing
-		double ergETe = 0;
+	//Training Wert eintragen
+	double ergETr = 0;
 
-
-		for (int m = M / 2; m < M; ++m) {
-			double d[number_of_Exercise_Dates];
-			for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
-				d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
-				for (int k = 0; k < K; ++k)
-					d[ex] -= alpha[k]
-							* StochIntegrals[k][m][Exercise_Dates[ex]];
-			}
-			ergETe += Max(d, number_of_Exercise_Dates) / (double) (M / 2);
+	for (int m = 0; m < M / 2; ++m) {
+		double d[number_of_Exercise_Dates];
+		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
+			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
+			for (int k = 0; k < K; ++k)
+				d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
 		}
+		ergETr += Max(d, number_of_Exercise_Dates) / (double) (M / 2);
+	}
 
-		ErgebnisAnhaengen(ergETe,(char*)"BFGS_ergebnisse.txt");
+	ErgebnisAnhaengen(ergETr, (char*) "BFGS_training.txt");
+
+	//Testing Wert eintragen
+	double ergETe = 0;
+	for (int m = M / 2; m < M; ++m) {
+		double d[number_of_Exercise_Dates];
+		for (int ex = 0; ex < number_of_Exercise_Dates; ++ex) {
+			d[ex] = payoff(X[m][Exercise_Dates[ex]], Exercise_Dates[ex]);
+			for (int k = 0; k < K; ++k)
+				d[ex] -= alpha[k] * StochIntegrals[k][m][ex];
+		}
+		ergETe += Max(d, number_of_Exercise_Dates) / (double) (M / 2);
+	}
+
+	ErgebnisAnhaengen(ergETe, (char*) "BFGS_testing.txt");
 
 }

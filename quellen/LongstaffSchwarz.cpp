@@ -18,7 +18,7 @@ void* DELEGATE_LSM_mittelwert(void* data) {
 }
 
 void AmericanOption::LongstaffSchwartz() { //TODO
-	LSM_Mtraining = 10000;
+	LSM_Mtraining = 1000;
 
 	LSM_setting();
 

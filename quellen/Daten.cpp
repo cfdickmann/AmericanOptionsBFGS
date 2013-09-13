@@ -21,27 +21,45 @@ void AmericanOption::Daten() {
 		r = 0.06;
 		T = 0.5;
 		Dates = 50;
-		N = 150;
-		KpI = 20;
-		M = 5000;
+		N = 500;
+		KpI = 1;
+		M = 10000;
 	}
+
+	if (Example == 2) {            //Rogers Min-Put
+			PfadModell = ITO;
+			option = MIN_PUT;
+			delta = 0;
+			D = 2;
+			for (int j = 0; j < D; ++j) {
+				X0[j] = 100.;
+				sigma[j] = 0.6;
+			}
+			Strike = 100.;
+			r = 0.06;
+			T = 0.5;
+			Dates = 50;
+			N = 500;
+			KpI = 2;
+			M = 20000;
+		}
 
 	if (Example == 3) {					//Glasserman Example MaxCall
 		PfadModell = ITO;
 		option = MAX_CALL;
 		delta = 0.1;
-		D = 2;
+		D = 5;
 		for (int j = 0; j < D; ++j) {
-			X0[j] = 90.;
+			X0[j] = 110.;
 			sigma[j] = 0.2;
 		}
 		Strike = 100.;
 		r = 0.05;
 		T = 3;
-		N = 2*90;
+		N = 3*90;
 		Dates = 10;
-		KpI = 48;
-		M = 10000;
+		KpI = 3;
+		M = 20000;
 	}
 
 	BFGS_Nesterov_Intervals = 1;

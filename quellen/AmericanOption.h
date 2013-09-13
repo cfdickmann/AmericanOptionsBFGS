@@ -104,12 +104,13 @@ void testen();
 
 int KpI;
 int NpI;
+int*** reihe;
 
 	double f1D(double x,double y, int k, int n);
 	double f2D(double* x, int k, int n, int d);
 	double f(int k, double **x, int n, int d);
-	double* f2D_all(double* x,double *y, int k, int n);
-	double* f_all(int k, double **x,double** y, int n);
+	double* f2D_all(double* x,double *y,int* reihe, int k, int n);
+	double* f_all(int k, double **x,double** y,int** reihe, int n);
 	double F(double x, int k, double border, bool hauf);
 	double F2(double x, int k, double border, bool hauf);
 	//MTRand MT; //MersenneTwister

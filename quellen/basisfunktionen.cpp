@@ -95,7 +95,19 @@ double AmericanOption::f1D(double x, double y, int k, int n) {
 
 //				return (x>0.3*Strike+Strike*1.*(double)(k)/(double)(KpI) )*x ;
 //
-	return trig(y, k) * x;
+	//return trig(y, k) * x;
+
+	double rStrich = r - delta;
+	double TStrich = T - (double) n * dt;
+	double d1 =
+			(log(x / Strike) + (rStrich + sigma[0] * sigma[0] / 2) * TStrich)
+					/ (sigma[0] * sqrt(TStrich));
+
+//	if(rand()%100==0)printf("%f,",d1);
+	return exp(-r * (double) n * dt - delta * TStrich) * (cnd(d1) - 1.) * x;
+//	return exp(-r * (double)n*dt-delta * TStrich) * (trig(d1/15.,k) - 1.)  *x;
+
+	//return EB.put_diff((double) n * dt, T, x, Strike, r, delta, sigma[0]) * x;
 
 //	if (option == MAX_CALL)
 //		return (exp(-(r - delta) * (double) n * dt) * exp(-T * delta)
@@ -202,6 +214,7 @@ double AmericanOption::f1D(double x, double y, int k, int n) {
 double AmericanOption::F(double x, int k, double border, bool hauf) {
 	double sigma = 0.8;
 	double bound = 0.45;
+
 	double xs = x / sigma;
 	if (k % 2 == 0)
 		return cos(k / 2 * xs) * (fabs(xs) < bound) + (xs >= bound);
@@ -212,6 +225,7 @@ double AmericanOption::F(double x, int k, double border, bool hauf) {
 double AmericanOption::F2(double x, int k, double border, bool hauf) {
 	double sigma = 0.4;
 	double bound = 0.55;
+
 	double xs = x / sigma;
 	if (k % 2 == 0)
 		return cos(k / 2 * xs) * (fabs(xs) < bound) + (xs >= bound);
@@ -219,116 +233,116 @@ double AmericanOption::F2(double x, int k, double border, bool hauf) {
 		return sin((k + 1) * xs / 2) * (fabs(xs) < bound) + (xs >= bound);
 }
 
-double* AmericanOption::f2D_all(double* x, double*y, int k, int n) {
-	double* ergs = new double[D];
-
-	for (int d = 0; d < D; ++d)
-		ergs[d] = 0;
-
-	double* yy = y;
-
-	double abs = fabs(x[0] - x[1]);
-
-//	double yy[KpI];
-//		for (int kk = 0; kk < KpI; ++kk)
-//			yy[kk] = log(x[kk] / Strike) / sqrt(T - (double) n * dt+0.00001);
+//double* AmericanOption::f2D_all(double* x, double*y, int k, int n) {
+//	double* ergs = new double[D];
 //
-	if (abs < 15.) {
-
-		if (k < 12) {
-			ergs[0] = F(yy[0] + yy[1], k, 0, 0) * x[0];
-			ergs[1] = F(yy[0] + yy[1], k, 0, 0) * x[1];
-//			ergs[0] = F(yy[0], k, 0, 0) * (x[0] >= x[1]) * x[0];
-//			ergs[1] = F(yy[1], k, 0, 0) * (x[0] <= x[1]) * x[1];
-			return ergs;
-		}
-
-		if (k < 24) {
-			ergs[0] = F(yy[0], k - 12, 0, 0) * x[0];
-			ergs[1] = F(yy[1], k - 12, 0, 0) * x[1];
-			return ergs;
-		}
-		return ergs;
-	}
-
-	if (abs >= 15.) {
-		if (k < 36) {
-			ergs[0] = F2(yy[0], k - 24, 0, 0) * (x[0] >= x[1]) * x[0];
-			ergs[1] = F2(yy[1], k - 24, 0, 0) * (x[0] <= x[1]) * x[1];
-			return ergs;
-		}
-
-		if (k < 48) {
-			ergs[0] = F2(yy[0], k - 36, 0, 0) * x[0];
-			ergs[1] = F2(yy[1], k - 36, 0, 0) * x[1];
-			return ergs;
-		}
-		return ergs;
-	}
-
+//	for (int d = 0; d < D; ++d)
+//		ergs[d] = 0;
 //
-//	if (k < 36) {
-//		ergs[0] = F(yy[0], k - 12, 0, 0) * x[0];
-//		ergs[1] = F(yy[1], k - 12, 0, 0) * x[1];
-//		return ergs;
-//	}
-
-//	if (k < 24) {
-//		ergs[0] = F(yy[0] + yy[1], k - 12, 0, 0) * x[0];
-//		ergs[1] = F(yy[0] + yy[1], k - 12, 0, 0) * x[1];
-//		return ergs;
-//	}
-
-//	if (k < 24) {
-//		int groesser0 = -1;
-//		if (yy[0] > yy[1])
-//			groesser0 = 1;
+//	double* yy = y;
 //
-//		ergs[0] = trig(fabs(yy[0] - yy[1]), k - 12) * groesser0 * x[0];
-//		ergs[1] = trig(fabs(yy[0] - yy[1]), k - 12) * (-groesser0) * x[1];
-//		return ergs;
-//	}
-
-//	if (k < KpI / 4) { //Funktionen, die vom Maximum abhaengen
-//		int d = argMax(x, D);
-//		ergs[d] = trig(y[d], k) * x[d];
-//		return ergs;
-//	}
+//	double abs = fabs(x[0] - x[1]);
 //
-//	if (k < 2 * KpI / 4) { //Funktionen, die von den einzelnen assets abhaengen
-//		k -= 1 * KpI / 4;
-//		for (int d = 0; d < D; ++d)
-//			if ((k % KpI) % D == d)
-//				ergs[d] = trig(y[d], k / D) * x[d];
-//		return ergs;
-//	}
+////	double yy[KpI];
+////		for (int kk = 0; kk < KpI; ++kk)
+////			yy[kk] = log(x[kk] / Strike) / sqrt(T - (double) n * dt+0.00001);
+////
+//	if (abs < 15.) {
 //
-//	if (k < 3 * KpI / 4) { //Funktionen, die von der Summe abhaengen
-//		k -= 2 * KpI / 4;
-//		double S = Sum(x, D) / (double) (D);
+//		if (k < 12) {
+//			ergs[0] = F(yy[0] + yy[1], k, 0, 0) * x[0];
+//			ergs[1] = F(yy[0] + yy[1], k, 0, 0) * x[1];
+////			ergs[0] = F(yy[0], k, 0, 0) * (x[0] >= x[1]) * x[0];
+////			ergs[1] = F(yy[1], k, 0, 0) * (x[0] <= x[1]) * x[1];
+//			return ergs;
+//		}
 //
-//		for (int d = 0; d < D; ++d)
-//			ergs[d] = trig(S, k) * x[d];
-//		return ergs;
-//	}
-//
-//	if (k < 4 * KpI / 4) { //Funktionen, die von der Differenz abhaengen
-//		k -= 3 * KpI / 4;
-//		double faktor = -1;
-//		double max = Max(x, D);
-//
-//		for (int d = 0; d < D; ++d) {
-//			if (x[d] == max)
-//				faktor = 1;
-//			double S = max - (Sum(y, D) - max) / (double) (D - 1);
-//			ergs[d] = trig(S, k) * faktor * x[d];
+//		if (k < 24) {
+//			ergs[0] = F(yy[0], k - 12, 0, 0) * x[0];
+//			ergs[1] = F(yy[1], k - 12, 0, 0) * x[1];
+//			return ergs;
 //		}
 //		return ergs;
 //	}
-
-	printf("Error 845\n");
-	return NULL;
-}
+//
+//	if (abs >= 15.) {
+//		if (k < 36) {
+//			ergs[0] = F2(yy[0], k - 24, 0, 0) * (x[0] >= x[1]) * x[0];
+//			ergs[1] = F2(yy[1], k - 24, 0, 0) * (x[0] <= x[1]) * x[1];
+//			return ergs;
+//		}
+//
+//		if (k < 48) {
+//			ergs[0] = F2(yy[0], k - 36, 0, 0) * x[0];
+//			ergs[1] = F2(yy[1], k - 36, 0, 0) * x[1];
+//			return ergs;
+//		}
+//		return ergs;
+//	}
+//
+////
+////	if (k < 36) {
+////		ergs[0] = F(yy[0], k - 12, 0, 0) * x[0];
+////		ergs[1] = F(yy[1], k - 12, 0, 0) * x[1];
+////		return ergs;
+////	}
+//
+////	if (k < 24) {
+////		ergs[0] = F(yy[0] + yy[1], k - 12, 0, 0) * x[0];
+////		ergs[1] = F(yy[0] + yy[1], k - 12, 0, 0) * x[1];
+////		return ergs;
+////	}
+//
+////	if (k < 24) {
+////		int groesser0 = -1;
+////		if (yy[0] > yy[1])
+////			groesser0 = 1;
+////
+////		ergs[0] = trig(fabs(yy[0] - yy[1]), k - 12) * groesser0 * x[0];
+////		ergs[1] = trig(fabs(yy[0] - yy[1]), k - 12) * (-groesser0) * x[1];
+////		return ergs;
+////	}
+//
+////	if (k < KpI / 4) { //Funktionen, die vom Maximum abhaengen
+////		int d = argMax(x, D);
+////		ergs[d] = trig(y[d], k) * x[d];
+////		return ergs;
+////	}
+////
+////	if (k < 2 * KpI / 4) { //Funktionen, die von den einzelnen assets abhaengen
+////		k -= 1 * KpI / 4;
+////		for (int d = 0; d < D; ++d)
+////			if ((k % KpI) % D == d)
+////				ergs[d] = trig(y[d], k / D) * x[d];
+////		return ergs;
+////	}
+////
+////	if (k < 3 * KpI / 4) { //Funktionen, die von der Summe abhaengen
+////		k -= 2 * KpI / 4;
+////		double S = Sum(x, D) / (double) (D);
+////
+////		for (int d = 0; d < D; ++d)
+////			ergs[d] = trig(S, k) * x[d];
+////		return ergs;
+////	}
+////
+////	if (k < 4 * KpI / 4) { //Funktionen, die von der Differenz abhaengen
+////		k -= 3 * KpI / 4;
+////		double faktor = -1;
+////		double max = Max(x, D);
+////
+////		for (int d = 0; d < D; ++d) {
+////			if (x[d] == max)
+////				faktor = 1;
+////			double S = max - (Sum(y, D) - max) / (double) (D - 1);
+////			ergs[d] = trig(S, k) * faktor * x[d];
+////		}
+////		return ergs;
+////	}
+//
+//	printf("Error 845\n");
+//	return NULL;
+//}
 
 ////
 //double* AmericanOption::f2D_all(double* x, int k, int n) {
@@ -574,22 +588,22 @@ double* AmericanOption::f2D_all(double* x, double*y, int k, int n) {
 //
 //	return sigma[0]*max_diff * x[0];
 //}
-double* AmericanOption::f_all(int k, double **x, double** y, int n) {
-
+double* AmericanOption::f_all(int k, double **x, double** y, int ** reihe,
+		int n) {
 	if (k / KpI != n / NpI)
 		return NULL;
 
 	int kAC = k % KpI;
 
-	double* xx = new double[1];
 	if (D == 1) {
+		double* xx = new double[1];
 		xx[0] = f1D(x[n][0], y[n][0], kAC, n);
 		return xx;
 	}
 	//	return f2D(x[n], kAC, n, d);
 
 	if (D >= 2)
-		return f2D_all(x[n], y[n], kAC, n);
+		return f2D_all(x[n], y[n], reihe[n], kAC, n);
 
 	printf("Error 263: etwas mit dem Aufrufen der fD stimme nicht \n");
 	return NULL;
@@ -620,3 +634,166 @@ double* AmericanOption::f_all(int k, double **x, double** y, int n) {
 ////	printf("Error 263: etwas mit dem Aufrufen der fD stimme nicht \n");
 ////	return -1;
 //}
+//
+//double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k, int n) {
+//	double* ergs = new double[D];
+////
+////	int* rr = BubbleSort(x, D);
+////	int rrrrr[D];
+////	for (int d = 0; d < D; ++d)
+////		reihrrrre[d] = rr[d];
+//
+////	delete[] rr;
+//
+//	for (int d = 0; d < D; ++d)
+//		ergs[d] = 0;
+//
+////	double* yy = y;
+//
+//	if (k < 1* KpI / 4) { //Funktionen, die vom Maximum abhaengen
+//		int d = argMax(x, D);
+//		ergs[d] = trig(y[d], k) * x[d];
+//		return ergs;
+//	}
+//
+//	if (k < 2 * KpI / 4) { //push
+//		k -= 1 * KpI / 4;
+//		double s = y[reihe[0]] - y[reihe[1]];
+//		ergs[reihe[0]] = trig(s, k) * x[reihe[0]];
+//		ergs[reihe[1]] = trig(s, k) * x[reihe[1]] * (-1.);
+//		return ergs;
+//	}
+//
+//	if (k < 3 * KpI / 4) { //Funktionen, die von den einzelnen assets abhaengen
+//		k -= 2 * KpI / 4;
+//		for (int d = 0; d < D; ++d)
+//			if ((k % KpI) % D == d)
+//				ergs[d] = trig(y[d], k / D) * x[d];
+//		return ergs;
+//	}
+//
+//	if (k < 4* KpI / 4) { //Funktionen, die vom Maximum abhaengen
+//		k -= 1 * KpI / 4;
+//		double s = 2*y[reihe[0]] + y[reihe[1]] + 0.5*y[reihe[2]];
+//		ergs[reihe[0]] = trig(s, k) * x[reihe[0]];
+//		ergs[reihe[1]] = trig(s, k) * x[reihe[1]];
+//		ergs[reihe[2]] = trig(s, k) * x[reihe[1]];
+//		return ergs;
+//		}
+//
+//
+////
+////	if (k < 3 * KpI / 4) { //Funktionen, die von der Summe abhaengen
+////		k -= 2 * KpI / 4;
+////		double S = Sum(x, D) / (double) (D);
+////
+////		for (int d = 0; d < D; ++d)
+////			ergs[d] = trig(S, k) * x[d];
+////		return ergs;
+////	}
+////
+////	if (k < 4 * KpI / 4) { //Funktionen, die von der Differenz abhaengen
+////		k -= 3 * KpI / 4;
+////		double faktor = -1;
+////		double max = Max(x, D);
+////
+////		for (int d = 0; d < D; ++d) {
+////			if (x[d] == max)
+////				faktor = 1;
+////			double S = max - (Sum(y, D) - max) / (double) (D - 1);
+////			ergs[d] = trig(S, k) * faktor * x[d];
+////		}
+////		return ergs;
+////	}
+//
+//	printf("Error 845\n");
+//	return NULL;
+//}
+
+double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
+		int n) {
+
+	double* ergs = new double[D];
+	for (int d = 0; d < D; ++d)
+		ergs[d] = 0;
+//
+//
+//	if (k == 0)if(x[0]<x[1])
+//			ergs[0] = EB.put_diff((double) n * dt, T, x[0], Strike, r,
+//					delta, sigma[0]) * x[0] * sigma[0];
+//
+//
+//	if (k == 1)if(x[1]<x[0])
+//			ergs[1] = EB.put_diff((double) n * dt, T, x[1], Strike, r,
+//					delta, sigma[1]) * x[1] * sigma[1];
+
+
+//	if (option == MIN_PUT) {
+//		int d_max = argMax(x, D);
+//		int d_min = argMin(x, D);
+//
+//		if (k == 0)
+//			ergs[d_min] = EB.put_diff((double) n * dt, T, x[d_min], Strike, r,
+//					delta, sigma[d_min]) * x[d_min] * sigma[d_min];
+//
+//		if (k == 1)
+//		if (x[d_min] <Strike)
+//				{
+//			int jj = reihe[0];
+//			int j = reihe[1];
+//			ergs[j] = EB.exchange_option_diff(x[j], x[jj], (double) n * dt, T,
+//					r, delta, sigma[j], 0) * x[j] * sigma[j];
+//
+//			ergs[jj] = EB.exchange_option_diff(x[j], x[jj], (double) n * dt, T,
+//					r, delta, sigma[jj], 1) * x[jj] * sigma[jj];
+//		}
+//
+////		if (k == 2)
+////			if (x[d_min] > Strike)
+////				ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike,
+////						r, delta, sigma[d_max]) * x[d_max] * sigma[d_max];
+//	}
+//
+//	if (option == MAX_CALL) {
+		int d_max = argMax(x, D);
+		int d_min = reihe[1];
+//
+		if (k == 0)
+			ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike, r,
+					delta, sigma[d_max]) * x[d_max] * sigma[d_max];
+
+		if (k == 1)
+//		if (x[d_max] >= Strike)
+				{
+			ergs[d_max] = EB.exchange_option_diff(x[d_min], x[d_max],
+					(double) n * dt, T, r, delta, sigma[d_max], 1) * x[d_max]
+					* sigma[d_max];
+
+			ergs[d_min] = EB.exchange_option_diff(x[d_min], x[d_max],
+					(double) n * dt, T, r, delta, sigma[d_min], 0)
+					* x[d_min] * sigma[d_min];
+		}
+
+		if (k == 2)
+//				if (x[d_min] >= Strike)
+						{
+					ergs[d_min] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
+							(double) n * dt, T, r, delta, sigma[d_min], 1) * x[d_min]
+							* sigma[d_min];
+
+					ergs[reihe[2]] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
+							(double) n * dt, T, r, delta, sigma[reihe[2]], 0)
+							* x[reihe[2]] * sigma[reihe[2]];
+				}
+
+
+//
+//		if (k == 2)
+//			if (x[d_min] > Strike)
+//				ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike,
+//						r, delta, sigma[d_max]) * x[d_max] * sigma[d_max];
+//	}
+
+	return ergs;
+}
+

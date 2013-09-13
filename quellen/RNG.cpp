@@ -10,7 +10,7 @@
 RNG::RNG() {
     int r = rand();
     setSeed(getpid() + r + time(NULL));
-setSeed(1);
+//setSeed(1);
 }
 
 RNG::RNG(const RNG& orig) {
