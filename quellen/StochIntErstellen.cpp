@@ -19,12 +19,14 @@ void AmericanOption::StochInt_erstellen() {
 			cout.flush();
 		}
 		for (int k = 0; k < K; ++k) {
+			bool schon=false;
 			for (int n = 1; n < N; ++n) {
+				if(X[m][n-1][0]<Strike || X[m][n-1][1]<Strike)schon=true;
 				double s = 0;
 					double* ergs = f_all(k, X[m], Y[m], reihe[m], n - 1);
 					if (ergs != NULL) {
 						for (int d = 0; d < D; ++d)
-							s += ergs[d] * WDiff[m][n][d];
+							s += ergs[d] * WDiff[m][n][d]*schon;;
 						delete[] ergs;
 					}
 				STI[k][n] = STI[k][n - 1] + s;

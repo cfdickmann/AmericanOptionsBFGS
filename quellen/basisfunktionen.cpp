@@ -22,6 +22,13 @@ double trig(double x, int k) {
 		return cos((double) (k / 2) * x);
 	else
 		return sin((double) ((k + 1) / 2) * x);
+}
+
+double trig_diff(double x, int k) {
+	if (k % 2 == 0)
+		return -sin((double) (k / 2) * x) * (double) (k / 2);
+	else
+		return cos((double) ((k + 1) / 2) * x) * (double) ((k + 1) / 2);
 
 }
 
@@ -635,80 +642,159 @@ double* AmericanOption::f_all(int k, double **x, double** y, int ** reihe,
 ////	return -1;
 //}
 //
-//double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k, int n) {
-//	double* ergs = new double[D];
-////
-////	int* rr = BubbleSort(x, D);
-////	int rrrrr[D];
-////	for (int d = 0; d < D; ++d)
-////		reihrrrre[d] = rr[d];
 //
-////	delete[] rr;
+//double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,  //gut für 5DMAX-CALL
+//		int n) {
+//	double* ergs = new double[D];
 //
 //	for (int d = 0; d < D; ++d)
 //		ergs[d] = 0;
 //
-////	double* yy = y;
-//
-//	if (k < 1* KpI / 4) { //Funktionen, die vom Maximum abhaengen
+//	if (k < 1 * KpI / 3) { //Funktionen, die vom Maximum abhaengen
 //		int d = argMax(x, D);
 //		ergs[d] = trig(y[d], k) * x[d];
 //		return ergs;
 //	}
 //
-//	if (k < 2 * KpI / 4) { //push
-//		k -= 1 * KpI / 4;
+//	if (k < 2 * KpI / 3) { //push
+//		k -= 1 * KpI / 3;
+////			ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+////			ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
 //		double s = y[reihe[0]] - y[reihe[1]];
 //		ergs[reihe[0]] = trig(s, k) * x[reihe[0]];
 //		ergs[reihe[1]] = trig(s, k) * x[reihe[1]] * (-1.);
 //		return ergs;
 //	}
 //
-//	if (k < 3 * KpI / 4) { //Funktionen, die von den einzelnen assets abhaengen
-//		k -= 2 * KpI / 4;
+//	if (k < 3 * KpI / 3) { //Funktionen, die von den einzelnen assets abhaengen
+//		k -= 2 * KpI / 3;
 //		for (int d = 0; d < D; ++d)
-//			if ((k % KpI) % D == d)
-//				ergs[d] = trig(y[d], k / D) * x[d];
+//	//	if ((k % KpI) % D == d)
+////				ergs[d] = trig(y[d], k / D) * x[d]; //ACHTUNG!!
+//			ergs[d] = trig(y[d], k) * x[d];
 //		return ergs;
 //	}
 //
-//	if (k < 4* KpI / 4) { //Funktionen, die vom Maximum abhaengen
-//		k -= 1 * KpI / 4;
-//		double s = 2*y[reihe[0]] + y[reihe[1]] + 0.5*y[reihe[2]];
-//		ergs[reihe[0]] = trig(s, k) * x[reihe[0]];
-//		ergs[reihe[1]] = trig(s, k) * x[reihe[1]];
-//		ergs[reihe[2]] = trig(s, k) * x[reihe[1]];
-//		return ergs;
-//		}
-//
-//
-////
-////	if (k < 3 * KpI / 4) { //Funktionen, die von der Summe abhaengen
-////		k -= 2 * KpI / 4;
-////		double S = Sum(x, D) / (double) (D);
-////
-////		for (int d = 0; d < D; ++d)
-////			ergs[d] = trig(S, k) * x[d];
+////	if (k < 4* KpI / 4) {
+////		k -= 1 * KpI / 4;
+////				ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+////				ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
 ////		return ergs;
-////	}
-////
-////	if (k < 4 * KpI / 4) { //Funktionen, die von der Differenz abhaengen
-////		k -= 3 * KpI / 4;
-////		double faktor = -1;
-////		double max = Max(x, D);
-////
-////		for (int d = 0; d < D; ++d) {
-////			if (x[d] == max)
-////				faktor = 1;
-////			double S = max - (Sum(y, D) - max) / (double) (D - 1);
-////			ergs[d] = trig(S, k) * faktor * x[d];
 ////		}
-////		return ergs;
-////	}
 //
 //	printf("Error 845\n");
 //	return NULL;
 //}
+
+//
+//double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k, //hoffentlich gut für 2D
+//		int n) {
+//	double* ergs = new double[D];
+//
+//	for (int d = 0; d < D; ++d)
+//		ergs[d] = 0;
+//
+//	if (k < 1 * KpI / 3) { //Funktionen, die vom Maximum abhaengen
+//		int d = argMax(x, D);
+//		ergs[d] = trig(y[d], k) * x[d];
+//		return ergs;
+//	}
+//
+//	if (k < 2 * KpI / 3) { //push
+//		k -= 1 * KpI / 3;
+////			ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+////			ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+//		double s = y[reihe[0]] - y[reihe[1]];
+//		ergs[reihe[0]] = trig(s, k) * x[reihe[0]];
+//		ergs[reihe[1]] = trig(s, k) * x[reihe[1]] * (-1.);
+//		return ergs;
+//	}
+//
+//	if (k < 3 * KpI / 3) { //Funktionen, die von den einzelnen assets abhaengen
+//		k -= 2 * KpI / 3;
+//		for (int d = 0; d < D; ++d)
+//	//	if ((k % KpI) % D == d)
+////				ergs[d] = trig(y[d], k / D) * x[d]; //ACHTUNG!!
+//			ergs[d] = trig(y[d], k) * x[d];
+//		return ergs;
+//	}
+//
+////	if (k < 4* KpI / 4) {
+////		k -= 1 * KpI / 4;
+////				ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+////				ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+////		return ergs;
+////		}
+//
+//	printf("Error 845\n");
+//	return NULL;
+//}
+
+/*
+ double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k, //hoffentlich gut für ND-MinPut
+ int n) {
+ double* ergs = new double[D];
+
+ for (int d = 0; d < D; ++d)
+ ergs[d] = 0;
+
+ if (k < 1 * KpI / 3) { //Funktionen, die vom Minimum abhaengen
+ int d = argMin(x, D);
+ ergs[d] = trig(y[d], k) * x[d];
+ return ergs;
+ }
+
+ if (k < 2 * KpI / 3) { //push
+ k -= 1 * KpI / 3;
+ //			ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+ //			ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+ double s = y[reihe[D-1]] - y[reihe[D-2]];
+ ergs[reihe[D-1]] = trig(s, k) * x[reihe[D-1]];
+ ergs[reihe[D-2]] = trig(s, k) * x[reihe[D-2]] * (-1.);
+ return ergs;
+ }
+
+ if (k < 3 * KpI / 3) { //Funktionen, die von den einzelnen assets abhaengen
+ k -= 2 * KpI / 3;
+ for (int d = 0; d < D; ++d)
+ //	if ((k % KpI) % D == d)
+ //				ergs[d] = trig(y[d], k / D) * x[d]; //ACHTUNG!!
+ //if(x[d]<x[reihe[5]])
+ ergs[d] = trig(y[d], k) * x[d];
+ return ergs;
+ }
+
+ if (k < 4 * KpI / 4) { //Funktionen, die vom Produkt abhaengen
+ k -= 3 * KpI / 4;
+ //			double prod=1.;
+ //			for (int d = 0; d < 2; ++d)
+ //				prod*=x[reihe[d]];
+ //	if ((k % KpI) % D == d)
+ //				ergs[d] = trig(y[d], k / D) * x[d]; //ACHTUNG!!
+ //if(x[d]<x[reihe[5]])
+ //double sum=0;
+ //for(int d=0;d<D;++d)
+ //	sum+=y[reihe[d]];
+ //
+ //			for (int d = 0; d < D/2; ++d)
+ //				ergs[reihe[d]] = trig(sum/(double)D, k) *x[reihe[d]];
+ double s = y[reihe[D-2]] - y[reihe[D-3]];
+ ergs[reihe[D-2]] = trig(s, k) * x[reihe[D-2]];
+ ergs[reihe[D-3]] = trig(s, k) * x[reihe[D-3]] * (-1.);
+ return ergs;
+ return ergs;
+ }
+
+ //	if (k < 4* KpI / 4) {
+ //		k -= 1 * KpI / 4;
+ //				ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+ //				ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 20., k);
+ //		return ergs;
+ //		}
+
+ printf("Error 845\n");
+ return NULL;
+ }*/
 
 double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
 		int n) {
@@ -716,7 +802,7 @@ double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
 	double* ergs = new double[D];
 	for (int d = 0; d < D; ++d)
 		ergs[d] = 0;
-//
+
 //
 //	if (k == 0)if(x[0]<x[1])
 //			ergs[0] = EB.put_diff((double) n * dt, T, x[0], Strike, r,
@@ -726,8 +812,7 @@ double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
 //	if (k == 1)if(x[1]<x[0])
 //			ergs[1] = EB.put_diff((double) n * dt, T, x[1], Strike, r,
 //					delta, sigma[1]) * x[1] * sigma[1];
-
-
+//
 //	if (option == MIN_PUT) {
 //		int d_max = argMax(x, D);
 //		int d_min = argMin(x, D);
@@ -753,11 +838,11 @@ double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
 ////				ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike,
 ////						r, delta, sigma[d_max]) * x[d_max] * sigma[d_max];
 //	}
-//
-//	if (option == MAX_CALL) {
+
+	if (option == MAX_CALL) {
 		int d_max = argMax(x, D);
 		int d_min = reihe[1];
-//
+
 		if (k == 0)
 			ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike, r,
 					delta, sigma[d_max]) * x[d_max] * sigma[d_max];
@@ -770,24 +855,63 @@ double* AmericanOption::f2D_all(double* x, double* y, int* reihe, int k,
 					* sigma[d_max];
 
 			ergs[d_min] = EB.exchange_option_diff(x[d_min], x[d_max],
-					(double) n * dt, T, r, delta, sigma[d_min], 0)
-					* x[d_min] * sigma[d_min];
+					(double) n * dt, T, r, delta, sigma[d_min], 0) * x[d_min]
+					* sigma[d_min];
+		}
+	}
+
+	if (option == MIN_PUT) {
+		int d_max = argMax(x, D);
+		//int d_min = reihe[1];
+
+		int d_min = argMin(x, D);
+
+		if (k == 0)//if (x[d_min] < Strike)
+			ergs[d_min] = EB.put_diff((double) n * dt, T, x[d_min], Strike, r,
+					delta, sigma[d_min]) * x[d_min] * sigma[d_min];
+
+		if (k == 1)
+				//if (x[d_min] < Strike)
+				{
+			ergs[d_max] = EB.exchange_option_diff(x[d_min], x[d_max],
+					(double) n * dt, T, r, delta, sigma[d_max], 1) * x[d_max]
+					* sigma[d_max];
+
+			ergs[d_min] = EB.exchange_option_diff(x[d_min], x[d_max],
+					(double) n * dt, T, r, delta, sigma[d_min], 0) * x[d_min]
+					* sigma[d_min];
 		}
 
-		if (k == 2)
-//				if (x[d_min] >= Strike)
-						{
-					ergs[d_min] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
-							(double) n * dt, T, r, delta, sigma[d_min], 1) * x[d_min]
-							* sigma[d_min];
+		if (k == 2)if (x[d_min] < Strike)
+				ergs[d_min] = EB.put_diff((double) n * dt, T, x[d_min], Strike, r,
+						delta, sigma[d_min]) * x[d_min] * sigma[d_min];
 
-					ergs[reihe[2]] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
-							(double) n * dt, T, r, delta, sigma[reihe[2]], 0)
-							* x[reihe[2]] * sigma[reihe[2]];
-				}
+	}
 
-
+//		if (k == 2)
+////				if (x[d_min] >= Strike)
+//						{
+//					ergs[d_min] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
+//							(double) n * dt, T, r, delta, sigma[d_min], 1) * x[d_min]
+//							* sigma[d_min];
 //
+//					ergs[reihe[2]] = EB.exchange_option_diff(x[reihe[2]], x[d_min],
+//							(double) n * dt, T, r, delta, sigma[reihe[2]], 0)
+//							* x[reihe[2]] * sigma[reihe[2]];
+//				}
+//
+//double Wurzel = sqrt(2.) * sigma[0] * sqrt(T - (double) n * dt + 0.0001);
+//double d1 = log(x[reihe[0]] / y[reihe[1]]) / Wurzel;
+//
+//	if (k < KpI / 2)
+//		ergs[reihe[0]] = trig(y[reihe[0]], k) * x[reihe[0]];
+//	else {
+////		ergs[reihe[0]] = x[reihe[0]]*( trig(d1 / 10., k - KpI / 2)+trig_diff(d1 / 10., k - KpI / 2)*( 1.-x[reihe[1]]/x[reihe[0]] ));
+////		ergs[reihe[1]] = x[reihe[1]]*(-trig(d1 / 10., k - KpI / 2)+trig_diff(d1 / 10., k - KpI / 2)*(-1.-x[reihe[0]]/x[reihe[1]] ));
+//		ergs[reihe[0]] = x[reihe[0]]*trig( (y[reihe[0]]-y[reihe[1]]) / 10., k - KpI / 2);
+//		ergs[reihe[1]] = x[reihe[1]]*trig( (y[reihe[0]]-y[reihe[1]]) / 10., k - KpI / 2);
+//
+//	}
 //		if (k == 2)
 //			if (x[d_min] > Strike)
 //				ergs[d_max] = EB.call_diff((double) n * dt, T, x[d_max], Strike,

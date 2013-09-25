@@ -74,7 +74,7 @@ int Dates;
 
 	double obj(double * alpha);
 	double* obj_diff(double * alpha);
-	double static const p = 3.; //Glättungsparameter
+	double static const p = 2.; //Glättungsparameter
 
 	void Wdiff_und_X_erstellen();
 	void StochInt_erstellen();

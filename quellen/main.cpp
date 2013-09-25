@@ -20,9 +20,13 @@ int main(int argc, char* args[]) {
 //
 //	printf("teueres y hinten: %f\n", EB.exchange_option(90., 100., 0., 3., 0.05, 0, 0.2));
 //	printf("teueres x vorne: %f\n", EB.exchange_option(100., 90., 0., 3., 0.05, 0, 0.2));
-		printf("E0  : %f\n",EB.put(0.,1.,110,100,0.07,0.4,0.25));
-		printf("E3  : %f\n",EB.put(3.,4.,110,100,0.07,0.4,0.25));
+		printf("E0  : %f\n",EB.put(0.,1.,110,100,0.07,0.,0.25));
+		printf("E3  : %f\n",EB.put(3.,4.,110,100,0.07,0.,0.25));
 		printf("E3  : %f\n",EB.put_diff(3.,4.,110,100,0.07,0.4,0.25));
+		printf("E3  : %f\n",
+	(			EB.put(3.,4.,110.+0.000001,100,0.07,0.4,0.25)
+		-EB.put(3.,4.,110,100,0.07,0.4,0.25))/0.000001
+		);
 
 	int runden = 1;
 	AmericanOption AMO;

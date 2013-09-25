@@ -297,6 +297,8 @@ double EuroBewerter::exchange_option_diff(double x, double y, double t,
 	double d1 = (log(x / y) + (sigma * sigma) * TStrich) / Wurzel;
 	double d2 = (log(x / y) - (sigma * sigma) * TStrich) / Wurzel;
 
+//if(rand()%100==0)
+//printf("%f,\n",cnd(d1));
 	if (re == 0)
 		return exp(-r * t - delta * (T - t))
 				* (cnd(d1) + (dnd(d1) - y / x * dnd(d2)) / Wurzel);

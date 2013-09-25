@@ -3,7 +3,7 @@
 using namespace std;
 
 void AmericanOption::Daten() {
-	int Example =3;
+	int Example =2;
 
 	X0 = (double*) malloc(sizeof(double) * 100);
 	sigma = (double*) malloc(sizeof(double) * 100);
@@ -39,16 +39,16 @@ void AmericanOption::Daten() {
 			r = 0.06;
 			T = 0.5;
 			Dates = 50;
-			N = 500;
+			N = 1500;
 			KpI = 2;
-			M = 20000;
+			M = 10000;
 		}
 
 	if (Example == 3) {					//Glasserman Example MaxCall
 		PfadModell = ITO;
 		option = MAX_CALL;
 		delta = 0.1;
-		D = 5;
+		D = 2;
 		for (int j = 0; j < D; ++j) {
 			X0[j] = 110.;
 			sigma[j] = 0.2;
@@ -56,10 +56,10 @@ void AmericanOption::Daten() {
 		Strike = 100.;
 		r = 0.05;
 		T = 3;
-		N = 3*90;
+		N = 4*90;
 		Dates = 10;
-		KpI = 3;
-		M = 20000;
+		KpI = 75;
+		M = 10000;
 	}
 
 	BFGS_Nesterov_Intervals = 1;
